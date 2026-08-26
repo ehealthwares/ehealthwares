@@ -64,7 +64,7 @@ export const ehealthwaresApi = {
   getPartners: () => apiGet<Partner[]>(`/partners`),
   getTeam: () => apiGet<TeamMember[]>(`/team`),
   submitContact: (data: ContactPayload) =>
-    apiPost<ContactPayload>(`/api/contact`, data),
+    apiPost<ContactPayload>(`/api/ehealthwares/contact`, data),
   getSettings: () => apiGet<SiteSettings>(`/settings`),
   getHeroSlides: () => apiGet<HeroSlide[]>(`/hero-slides`),
   getCategories: () => apiGet<ProductCategory[]>(`/categories`),
