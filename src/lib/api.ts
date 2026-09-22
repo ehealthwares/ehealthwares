@@ -17,7 +17,7 @@ import type {
 const CACHE_TTL_SECONDS = Number(process.env.CACHE_TTL_SECONDS)|| 3600
 const isServer = typeof window === 'undefined';
 const API_BASE = isServer
-  ? (process.env.API_URL || 'http://api.ehealthwares.com/ehealthwares')
+  ? (process.env.API_URL || 'https://api.ehealthwares.com/ehealthwares')
   : (process.env.NEXT_PUBLIC_API_URL || '/');
 
 export async function apiGet<T>(path: string): Promise<T | null> {

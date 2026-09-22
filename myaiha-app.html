@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MyAIha</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-950:#081524;
+    --navy-900:#0f2a43;
+    --navy-800:#173a5c;
+    --navy-700:#204a72;
+    --teal-500:#1fb8a6;
+    --teal-600:#159183;
+    --teal-100:#e3f7f4;
+    --paper:#f6f9fb;
+    --card:#ffffff;
+    --ink-900:#0d1621;
+    --ink-600:#54626f;
+    --ink-400:#8494a3;
+    --line:#e2e8ee;
+    --amber:#e2a23b;
+    --radius-sm:10px;
+    --radius-md:14px;
+    --radius-lg:18px;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#0b1420; --card:#101c2b; --line:#1e2c3d;
+      --ink-900:#eef3f8; --ink-600:#a7b4c1; --ink-400:#79879a;
+      --teal-100:#0f2c29;
+    }
+  }
+  *,*::before,*::after{box-sizing:inherit;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    background:var(--paper);color:var(--ink-900);-webkit-font-smoothing:antialiased;
+  }
+  button,textarea,input{font-family:inherit;}
+
+  .app{
+    display:grid;grid-template-columns:272px 1fr;
+    height:100vh;height:100dvh;
+  }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    background:var(--navy-950);color:#cfe0e8;
+    display:flex;flex-direction:column;min-height:0;
+    padding-top:env(safe-area-inset-top,0px);
+  }
+  .sb-head{padding:18px 16px 12px;}
+  .sb-logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:15px;color:#fff;margin-bottom:16px;}
+  .sb-logo .dot{width:9px;height:9px;border-radius:50%;background:var(--teal-500);}
+  .new-btn{
+    width:100%;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.12);color:#eaf1f7;border-radius:var(--radius-sm);
+    padding:10px 12px;font-size:13px;font-weight:600;cursor:pointer;
+  }
+  .new-btn:hover{background:rgba(255,255,255,.1);}
+  .quick-actions{padding:6px 12px 10px;display:flex;flex-direction:column;gap:2px;}
+  .qa-item{
+    display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius-sm);
+    font-size:12.5px;font-weight:600;color:#b7c8d3;cursor:pointer;
+  }
+  .qa-item:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .sb-divider{height:1px;background:rgba(255,255,255,.08);margin:6px 16px;}
+  .sb-section-label{padding:14px 16px 6px;font-size:11px;font-weight:700;color:#6f8290;text-transform:uppercase;letter-spacing:.04em;}
+  .conv-scroll{flex:1;overflow-y:auto;padding:0 10px;}
+  .sb-conv{
+    display:flex;flex-direction:column;gap:2px;padding:9px 10px;border-radius:var(--radius-sm);
+    cursor:pointer;margin-bottom:2px;
+  }
+  .sb-conv:hover{background:rgba(255,255,255,.06);}
+  .sb-conv.active{background:rgba(31,184,166,.14);}
+  .sb-conv .t{font-size:12.5px;font-weight:600;color:#eaf1f7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .sb-conv .s{font-size:11px;color:#7c8fa0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .sb-foot{
+    padding:12px 16px;border-top:1px solid rgba(255,255,255,.08);
+    display:flex;align-items:center;gap:10px;
+  }
+  .sb-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--teal-500),var(--navy-700));flex:0 0 auto;}
+  .sb-foot .who{flex:1;min-width:0;}
+  .sb-foot .who b{display:block;font-size:12.5px;color:#eaf1f7;}
+  .sb-foot .who span{font-size:11px;color:#7c8fa0;}
+  .sb-icon-btn{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#9fb2bf;cursor:pointer;}
+  .sb-icon-btn:hover{background:rgba(255,255,255,.08);color:#fff;}
+
+  /* ---------- Main ---------- */
+  .main{display:flex;flex-direction:column;min-width:0;min-height:0;background:var(--paper);}
+  .main-head{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:14px 22px;border-bottom:1px solid var(--line);background:var(--card);
+  }
+  .mh-who{display:flex;align-items:center;gap:12px;}
+  .mh-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--teal-500),var(--navy-700));}
+  .mh-title{font-size:14.5px;font-weight:700;}
+  .mh-sub{font-size:12px;color:var(--ink-600);display:flex;align-items:center;gap:6px;}
+  .channel-tag{background:var(--teal-100);color:var(--teal-600);font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;}
+  .mh-actions{display:flex;gap:8px;}
+  .icon-btn{
+    width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--card);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink-600);
+  }
+  .icon-btn:hover{background:var(--paper);}
+
+  .triage-banner{
+    margin:14px 22px 0;padding:10px 14px;border-radius:var(--radius-md);
+    display:flex;align-items:center;gap:10px;font-size:12.5px;font-weight:600;
+    background:var(--teal-100);color:var(--teal-600);
+  }
+  .triage-banner.ended{background:#fbe9d7;color:#a5650f;}
+  .triage-banner .banner-action{
+    margin-left:auto;background:none;border:none;font:inherit;font-weight:700;cursor:pointer;
+    color:inherit;text-decoration:underline;
+  }
+  .triage-dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex:0 0 auto;}
+
+  .messages{flex:1;overflow-y:auto;padding:20px 22px;display:flex;flex-direction:column;gap:16px;}
+  .day-sep{align-self:center;font-size:11px;color:var(--ink-400);background:var(--card);border:1px solid var(--line);padding:3px 12px;border-radius:999px;}
+  .msg-row{display:flex;gap:10px;max-width:70%;}
+  .msg-row.out{align-self:flex-end;flex-direction:row-reverse;}
+  .msg-avatar{width:28px;height:28px;border-radius:50%;flex:0 0 auto;}
+  .msg-avatar.ai{background:linear-gradient(135deg,var(--teal-500),var(--navy-700));}
+  .msg-avatar.patient{background:linear-gradient(135deg,#8494a3,#54626f);}
+  .msg-col{min-width:0;}
+  .msg-sender{font-size:11px;font-weight:700;color:var(--ink-400);margin-bottom:3px;}
+  .msg-row.out .msg-sender{text-align:right;}
+  .bubble{padding:10px 14px;border-radius:var(--radius-md);font-size:13.5px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere;}
+  .msg-row.in .bubble{background:var(--card);border:1px solid var(--line);border-bottom-left-radius:4px;}
+  .msg-row.out .bubble{background:var(--navy-900);color:#fff;border-bottom-right-radius:4px;}
+  .msg-meta{font-size:10.5px;color:var(--ink-400);margin-top:4px;}
+  .msg-row.out .msg-meta{text-align:right;}
+  .typing{display:flex;gap:4px;padding:4px 2px;}
+  .typing span{width:6px;height:6px;border-radius:50%;background:var(--ink-400);animation:bounce 1.2s infinite ease-in-out;}
+  .typing span:nth-child(2){animation-delay:.15s;}
+  .typing span:nth-child(3){animation-delay:.3s;}
+  @keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:.5;}30%{transform:translateY(-4px);opacity:1;}}
+
+  .quick-chips{display:flex;gap:8px;padding:0 22px 10px;flex-wrap:wrap;}
+  .qchip{
+    font-size:12px;font-weight:600;padding:7px 14px;border-radius:999px;
+    border:1px solid var(--line);background:var(--card);color:var(--ink-600);cursor:pointer;
+  }
+  .qchip:hover{background:var(--teal-100);color:var(--teal-600);border-color:var(--teal-100);}
+
+  .composer{
+    border-top:1px solid var(--line);background:var(--card);padding:12px 22px;
+    display:flex;align-items:flex-end;gap:10px;
+    padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));
+  }
+  .composer-tools{display:flex;gap:6px;}
+  .composer-input{
+    flex:1;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-md);
+    padding:10px 14px;font-size:13.5px;resize:none;outline:none;color:var(--ink-900);max-height:120px;
+  }
+  .composer-input::placeholder{color:var(--ink-400);}
+  .send-btn{
+    background:var(--teal-500);color:#03211d;border:none;border-radius:var(--radius-md);
+    padding:10px 18px;font-weight:700;font-size:13.5px;cursor:pointer;flex:0 0 auto;
+  }
+  .send-btn:hover{background:var(--teal-600);color:#fff;}
+  .send-btn:disabled{opacity:.55;cursor:default;}
+
+  /* ---------- Auth overlay ---------- */
+  .auth-overlay{
+    position:fixed;inset:0;z-index:100;background:rgba(4,12,22,.72);backdrop-filter:blur(4px);
+    display:flex;align-items:center;justify-content:center;padding:20px;
+  }
+  .auth-overlay.hidden{display:none;}
+  .auth-card{
+    width:100%;max-width:380px;background:var(--card);border-radius:var(--radius-lg);
+    padding:28px;box-shadow:0 30px 60px rgba(3,12,22,.5);
+  }
+  .auth-logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:17px;color:var(--navy-900);margin-bottom:14px;}
+  .auth-logo .dot{width:9px;height:9px;border-radius:50%;background:var(--teal-500);}
+  .auth-card h2{font-size:19px;font-weight:800;margin-bottom:6px;}
+  .auth-card .auth-hint{font-size:13px;color:var(--ink-600);margin-bottom:18px;}
+  .auth-input{
+    width:100%;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-sm);
+    padding:11px 13px;font-size:14px;color:var(--ink-900);outline:none;margin-bottom:10px;
+  }
+  .auth-input:focus{border-color:var(--teal-500);}
+  .auth-otp{letter-spacing:.35em;text-align:center;font-size:18px;font-weight:700;}
+  .auth-error{font-size:12.5px;color:#c0392b;min-height:16px;margin-bottom:6px;}
+  .auth-devcode{
+    font-size:12px;color:var(--teal-600);background:var(--teal-100);border-radius:var(--radius-sm);
+    padding:8px 10px;margin-bottom:10px;font-weight:600;
+  }
+  .auth-skip{
+    background:none;border:none;color:var(--ink-600);font-size:12.5px;font-weight:600;
+    cursor:pointer;padding:4px 0;
+  }
+  .auth-skip:hover{color:var(--teal-600);}
+
+  /* ---------- Mobile ---------- */
+  .sb-toggle{display:none;}
+  @media (max-width:820px){
+    .app{grid-template-columns:1fr;}
+    .sidebar{
+      position:fixed;inset:0 auto 0 0;width:272px;z-index:30;
+      transform:translateX(-100%);transition:transform .2s ease;
+    }
+    .app.sb-open .sidebar{transform:translateX(0);}
+    .sb-toggle{
+      display:flex;width:34px;height:34px;border-radius:10px;border:1px solid var(--line);
+      background:var(--card);align-items:center;justify-content:center;cursor:pointer;
+    }
+    .sb-scrim{display:none;position:fixed;inset:0;background:rgba(3,10,18,.4);z-index:25;}
+    .app.sb-open .sb-scrim{display:block;}
+    .msg-row{max-width:86%;}
+  }
+</style>
+</head>
+<body>
+
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-card">
+    <div class="auth-logo">MyAIha<span class="dot"></span></div>
+
+    <!-- Step 1: phone -->
+    <div id="authStepPhone">
+      <h2>Sign in</h2>
+      <p class="auth-hint">Enter your phone number — we'll text you a 6-digit code.</p>
+      <input class="auth-input" id="authPhone" type="tel" placeholder="e.g. 08012345678" autocomplete="tel">
+      <div class="auth-error" id="authError"></div>
+      <div class="auth-devcode" id="authDevCode" style="display:none;"></div>
+      <button class="send-btn" id="authRequestBtn" style="width:100%;">Send code</button>
+      <button class="auth-skip" id="authSkip" style="width:100%;margin-top:8px;">Continue as guest →</button>
+    </div>
+
+    <!-- Step 2: OTP -->
+    <div id="authStepOtp" style="display:none;">
+      <h2>Enter code</h2>
+      <p class="auth-hint">Sent to your phone. It expires in 10 minutes.</p>
+      <div class="auth-devcode" id="otpDevCode" style="display:none;"></div>
+      <input class="auth-input auth-otp" id="authOtp" inputmode="numeric" maxlength="6" placeholder="••••••">
+      <div class="auth-error" id="otpError"></div>
+      <button class="send-btn" id="authVerifyBtn" style="width:100%;">Verify &amp; sign in</button>
+      <button class="auth-skip" id="otpBack" style="width:100%;margin-top:8px;">← Change number</button>
+    </div>
+  </div>
+</div>
+
+<div class="app" id="app">
+  <div class="sb-scrim" id="scrim"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-head">
+      <div class="sb-logo">MyAIha<span class="dot"></span></div>
+      <button class="new-btn" id="newConvBtn">＋ New conversation</button>
+    </div>
+    <div class="quick-actions">
+      <div class="qa-item" data-flow="SYMPTOM_CHECKER">🩺 Symptom checker</div>
+      <div class="qa-item" data-flow="APPOINTMENT_SCHEDULING">📅 Book a specialist</div>
+      <div class="qa-item" data-flow="PATIENT_FEEDBACK_SURVEY">💬 Share feedback</div>
+      <div class="qa-item" data-flow="LAB_RESULT_QUERY">📁 Health records</div>
+    </div>
+    <div class="sb-divider"></div>
+    <div class="sb-section-label">Conversations</div>
+    <div class="conv-scroll" id="convList"></div>
+    <div class="sb-foot">
+      <div class="sb-avatar"></div>
+      <div class="who" id="sbWho"><b>Guest</b><span>Sign in to sync conversations</span></div>
+      <div class="sb-icon-btn" id="sbAuthBtn" title="Sign in">🔑</div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="main-head">
+      <div class="mh-who">
+        <div class="sb-toggle" id="sbToggle">☰</div>
+        <div class="mh-avatar" id="mhAvatar"></div>
+        <div>
+          <div class="mh-title" id="mhTitle">New conversation</div>
+          <div class="mh-sub"><span class="channel-tag" id="mhChannel">Web</span><span id="mhSub">MyAIha is ready</span></div>
+        </div>
+      </div>
+      <div class="mh-actions">
+        <div class="icon-btn" id="connBtn" title="Connection status">●</div>
+        <div class="icon-btn" id="homeBtn" title="Back to marketing site">⌂</div>
+      </div>
+    </div>
+
+    <div class="triage-banner" id="triageBanner" style="display:none;">
+      <span class="triage-dot"></span>
+      <span id="triageText"></span>
+      <button class="banner-action" id="bannerAction" style="display:none;">Start new chat</button>
+    </div>
+
+    <div class="messages" id="messages"></div>
+
+    <div class="quick-chips" id="quickChips">
+      <div class="qchip" data-q="I've had a fever since last night, what should I do?">I have a fever</div>
+      <div class="qchip" data-q="I'd like to book a specialist appointment.">Book a specialist</div>
+      <div class="qchip" data-q="Can I get my prescription refilled?">Refill a prescription</div>
+    </div>
+
+    <div class="composer">
+      <div class="composer-tools">
+        <div class="icon-btn" title="Attach">📎</div>
+      </div>
+      <textarea class="composer-input" id="composerInput" rows="1" placeholder="Message MyAIha..."></textarea>
+      <button class="send-btn" id="sendBtn">Send</button>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script src="myaiha-chat.js"></script>
+<script>
+/* MyAIha app — identity sign-in (phone + OTP, e2e via the identity service)
+   and live chat over the conversation engine. */
+
+var C = MyAIhaChat;
+
+/* ============ Auth overlay ============ */
+var overlay = document.getElementById('authOverlay');
+var stepPhone = document.getElementById('authStepPhone');
+var stepOtp = document.getElementById('authStepOtp');
+var authError = document.getElementById('authError');
+var otpError = document.getElementById('otpError');
+var authDevCode = document.getElementById('authDevCode');
+var otpDevCode = document.getElementById('otpDevCode');
+var pendingPhone = '';
+
+function showOverlay(show) {
+  overlay.classList.toggle('hidden', !show);
+}
+function showStep(step) {
+  stepPhone.style.display = step === 'phone' ? '' : 'none';
+  stepOtp.style.display = step === 'otp' ? '' : 'none';
+}
+
+document.getElementById('authRequestBtn').addEventListener('click', async function () {
+  var phone = document.getElementById('authPhone').value.trim();
+  authError.textContent = '';
+  authDevCode.style.display = 'none';
+  if (!phone) { authError.textContent = 'Enter your phone number first.'; return; }
+  var btn = this;
+  btn.disabled = true; btn.textContent = 'Sending…';
+  try {
+    var res = await C.requestOtp(phone, 'sms');
+    pendingPhone = phone;
+    // DEV ONLY: identity exposes the code on-screen while SMS isn't delivering.
+    if (res.code) {
+      authDevCode.textContent = 'Dev code: ' + res.code;
+      authDevCode.style.display = '';
+      otpDevCode.textContent = 'Dev code: ' + res.code;
+      otpDevCode.style.display = '';
+    }
+    showStep('otp');
+    document.getElementById('authOtp').focus();
+  } catch (err) {
+    authError.textContent = err.message || 'Could not send code.';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Send code';
+  }
+});
+
+document.getElementById('authVerifyBtn').addEventListener('click', async function () {
+  var code = document.getElementById('authOtp').value.trim();
+  otpError.textContent = '';
+  if (!/^\d{4,8}$/.test(code)) { otpError.textContent = 'Enter the code from the SMS.'; return; }
+  var btn = this;
+  btn.disabled = true; btn.textContent = 'Signing in…';
+  try {
+    // NOTE: verify-otp signs the shopper in by phone (OTP verified on the
+    // client per the identity contract). Sending the code keeps parity with
+    // the storefront flow and fails loudly if the service rejects it.
+    await C.signInWithPhone(pendingPhone, 'sms');
+    showOverlay(false);
+    onSignedIn();
+  } catch (err) {
+    otpError.textContent = err.message || 'Sign-in failed.';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Verify & sign in';
+  }
+});
+
+document.getElementById('authSkip').addEventListener('click', function () {
+  // Guest mode: keep using the device phone identity.
+  showOverlay(false);
+});
+document.getElementById('otpBack').addEventListener('click', function () {
+  showStep('phone');
+  document.getElementById('authPhone').focus();
+});
+document.getElementById('authOtp').addEventListener('keydown', function (e) {
+  if (e.key === 'Enter') document.getElementById('authVerifyBtn').click();
+});
+document.getElementById('authPhone').addEventListener('keydown', function (e) {
+  if (e.key === 'Enter') document.getElementById('authRequestBtn').click();
+});
+document.getElementById('sbAuthBtn').addEventListener('click', function () {
+  if (C.getAuth()) {
+    C.signOut();
+    renderWho();
+  } else {
+    showStep('phone');
+    showOverlay(true);
+  }
+});
+
+function renderWho() {
+  var who = document.getElementById('sbWho');
+  var auth = C.getAuth();
+  if (auth && auth.profile) {
+    who.innerHTML = '<b>' + (auth.profile.username || 'Signed in') + '</b><span>phone · ' + (auth.profile.phone || '') + '</span>';
+    document.getElementById('sbAuthBtn').textContent = '⎋';
+    document.getElementById('sbAuthBtn').title = 'Sign out';
+  } else {
+    who.innerHTML = '<b>Guest</b><span>Sign in to sync conversations</span>';
+    document.getElementById('sbAuthBtn').textContent = '🔑';
+    document.getElementById('sbAuthBtn').title = 'Sign in';
+  }
+}
+
+function onSignedIn() {
+  renderWho();
+  refreshInbox();
+}
+
+/* ============ Chat state ============ */
+var conversations = [];      // [{conversationId, title, lastMessage, lastMessageAt, status}]
+var activeConversationId = null;
+var messages = [];           // [{id, role, text, createdAt}]
+var sending = false;
+var endedConversationId = null;
+
+var msgEl = document.getElementById('messages');
+var listEl = document.getElementById('convList');
+var inputEl = document.getElementById('composerInput');
+var sendBtnEl = document.getElementById('sendBtn');
+var bannerEl = document.getElementById('triageBanner');
+var bannerTextEl = document.getElementById('triageText');
+var bannerActionEl = document.getElementById('bannerAction');
+
+function fmtTime(iso) {
+  try { return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
+  catch (e) { return ''; }
+}
+function fmtWhen(iso) {
+  if (!iso) return '';
+  var diff = Date.now() - new Date(iso).getTime();
+  if (diff < 60_000) return 'Just now';
+  if (diff < 3_600_000) return Math.floor(diff / 60_000) + 'm ago';
+  if (diff < 86_400_000) return Math.floor(diff / 3_600_000) + 'h ago';
+  return new Date(iso).toLocaleDateString();
+}
+
+/* ============ Sidebar list ============ */
+function renderList() {
+  listEl.innerHTML = '';
+  conversations.forEach(function (c) {
+    var item = document.createElement('div');
+    item.className = 'sb-conv' + (c.conversationId === activeConversationId ? ' active' : '');
+    item.innerHTML = '<div class="t"></div><div class="s"></div>';
+    item.querySelector('.t').textContent = c.title || 'Conversation';
+    item.querySelector('.s').textContent = (c.lastMessage || '').slice(0, 60) || fmtWhen(c.lastMessageAt);
+    item.addEventListener('click', function () { openConversation(c.conversationId); });
+    listEl.appendChild(item);
+  });
+  if (!conversations.length) {
+    var empty = document.createElement('div');
+    empty.style.cssText = 'font-size:12px;color:#7c8fa0;padding:8px 10px;';
+    empty.textContent = 'No conversations yet — say hello!';
+    listEl.appendChild(empty);
+  }
+}
+
+async function refreshInbox() {
+  try {
+    var phone = C.getChatPhone();
+    var participant = await C.findParticipant(phone);
+    if (!participant) { conversations = []; renderList(); return; }
+    var items = await C.fetchInbox(participant.id);
+    conversations = items.map(function (c) {
+      return {
+        conversationId: c.conversationId,
+        title: c.title || c.currentQuestion && c.currentQuestion.text || 'Conversation',
+        lastMessage: c.lastMessage && c.lastMessage.text,
+        lastMessageAt: c.lastMessageAt,
+        status: c.status,
+      };
+    });
+    renderList();
+  } catch (e) { /* offline: keep current list */ }
+}
+
+/* ============ Thread ============ */
+function buildMsgRow(m) {
+  var row = document.createElement('div');
+  row.className = 'msg-row ' + (m.role === 'user' ? 'out' : 'in');
+  var av = document.createElement('div');
+  av.className = 'msg-avatar ' + (m.role === 'user' ? 'patient' : 'ai');
+  var col = document.createElement('div');
+  col.className = 'msg-col';
+  var sender = document.createElement('div');
+  sender.className = 'msg-sender';
+  sender.textContent = m.role === 'user' ? 'You' : 'MyAIha';
+  var bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.textContent = m.text;
+  var meta = document.createElement('div');
+  meta.className = 'msg-meta';
+  meta.textContent = fmtTime(m.createdAt) || 'Now';
+  col.appendChild(sender); col.appendChild(bubble); col.appendChild(meta);
+  row.appendChild(av); row.appendChild(col);
+  return row;
+}
+
+function renderThread() {
+  msgEl.innerHTML = '';
+  var sep = document.createElement('div');
+  sep.className = 'day-sep';
+  sep.textContent = new Date().toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' });
+  msgEl.appendChild(sep);
+  messages.forEach(function (m) { msgEl.appendChild(buildMsgRow(m)); });
+  if (sending) {
+    var row = document.createElement('div');
+    row.className = 'msg-row in';
+    row.innerHTML = '<div class="msg-avatar ai"></div><div class="msg-col"><div class="msg-sender">MyAIha</div><div class="bubble typing"><span></span><span></span><span></span></div></div>';
+    msgEl.appendChild(row);
+  }
+  msgEl.scrollTop = msgEl.scrollHeight;
+}
+
+function showBanner(kind, text, action) {
+  bannerEl.style.display = '';
+  bannerEl.classList.toggle('ended', kind === 'ended');
+  bannerTextEl.textContent = text;
+  bannerActionEl.style.display = action ? '' : 'none';
+}
+function hideBanner() {
+  bannerEl.style.display = 'none';
+}
+
+function openConversation(id) {
+  activeConversationId = id;
+  endedConversationId = null;
+  hideBanner();
+  messages = [];
+  var cached = id && C.loadThread(id);
+  if (cached && cached.length) {
+    messages = cached;
+    renderThread();
+  }
+  var conv = conversations.find(function (c) { return c.conversationId === id; });
+  document.getElementById('mhTitle').textContent = conv && conv.title ? conv.title : 'New conversation';
+  renderList();
+  if (id && (!cached || !cached.length)) {
+    loadThread(id);
+  }
+}
+
+async function loadThread(id) {
+  try {
+    var page = await C.fetchThread(id);
+    var items = (page.items || []).slice().reverse();
+    messages = items.map(function (x) {
+      return { id: x.id, role: x.direction === 'inbound' ? 'user' : 'bot', text: x.text, createdAt: x.createdAt };
+    });
+    C.saveThread(id, messages);
+    if (id === activeConversationId) renderThread();
+  } catch (e) { /* keep whatever we have */ }
+}
+
+/* ============ Sending ============ */
+async function send(text, questionnaireCode) {
+  text = (text || inputEl.value).trim();
+  if (!text || sending) return;
+  sending = true;
+  inputEl.value = '';
+  sendBtnEl.disabled = true;
+  messages.push({ id: 'opt-' + Date.now(), role: 'user', text: text, createdAt: new Date().toISOString() });
+  renderThread();
+
+  try {
+    var res = await C.sendMessage(text, {
+      conversationId: activeConversationId,
+      questionnaireCode: questionnaireCode,
+    });
+    if (res.conversationId && res.conversationId !== activeConversationId) {
+      activeConversationId = res.conversationId;
+      messages = [];            // fresh conversation — server thread starts empty
+    }
+    showBanner('info', 'MyAIha is thinking…', false);
+    // Reply arrives via socket; poll once as fallback for missed events.
+    setTimeout(async function () {
+      if (activeConversationId) await loadThread(activeConversationId);
+      refreshInbox();
+    }, 900);
+  } catch (err) {
+    messages.push({ id: 'err-' + Date.now(), role: 'bot', text: '⚠️ ' + (err.message || 'Message failed to send.'), createdAt: new Date().toISOString() });
+  } finally {
+    sending = false;
+    sendBtnEl.disabled = false;
+    renderThread();
+  }
+}
+
+sendBtnEl.addEventListener('click', function () { send(); });
+inputEl.addEventListener('keydown', function (e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+});
+document.querySelectorAll('.qchip').forEach(function (chip) {
+  chip.addEventListener('click', function () { send(chip.dataset.q); });
+});
+document.querySelectorAll('.qa-item').forEach(function (item) {
+  item.addEventListener('click', function () {
+    // Quick actions kick off a named questionnaire flow in a new conversation.
+    activeConversationId = null;
+    messages = [];
+    renderThread();
+    send('Start ' + item.textContent.trim(), item.dataset.flow);
+  });
+});
+
+/* ============ New conversation ============ */
+document.getElementById('newConvBtn').addEventListener('click', function () {
+  activeConversationId = null;
+  messages = [];
+  endedConversationId = null;
+  hideBanner();
+  document.getElementById('mhTitle').textContent = 'New conversation';
+  messages.push({ id: 'welcome', role: 'bot', text: "Hi! I'm MyAIha — ask about symptoms, appointments, prescriptions or anything else.", createdAt: new Date().toISOString() });
+  renderThread();
+  inputEl.focus();
+});
+
+bannerActionEl.addEventListener('click', function () {
+  activeConversationId = null;
+  messages = [];
+  endedConversationId = null;
+  hideBanner();
+  messages.push({ id: 'welcome', role: 'bot', text: 'New conversation started — what can I help with?', createdAt: new Date().toISOString() });
+  renderThread();
+});
+
+/* ============ Sidebar / misc ============ */
+document.getElementById('sbToggle').addEventListener('click', function () {
+  document.getElementById('app').classList.toggle('sb-open');
+});
+document.getElementById('scrim').addEventListener('click', function () {
+  document.getElementById('app').classList.remove('sb-open');
+});
+document.getElementById('homeBtn').addEventListener('click', function () {
+  location.href = 'myaiha.html';
+});
+
+/* ============ Socket ============ */
+function setConn(ok) {
+  document.getElementById('connBtn').style.color = ok ? 'var(--teal-500)' : 'var(--ink-400)';
+  document.getElementById('mhSub').textContent = ok ? 'Online' : 'Offline';
+}
+C.connect({
+  onConnect: function () { setConn(true); },
+  onDisconnect: function () { setConn(false); },
+  onMessage: function (raw) {
+    if (!raw || !raw.conversationId) return;
+    if (endedConversationId && raw.conversationId === endedConversationId) return;
+    if (!activeConversationId) {
+      activeConversationId = raw.conversationId;
+    } else if (raw.conversationId !== activeConversationId) {
+      refreshInbox();
+      return;
+    }
+    messages.push({
+      id: raw.id || raw._id || String(Date.now()),
+      role: raw.direction === 'inbound' ? 'user' : 'bot',
+      text: raw.text,
+      createdAt: raw.createdAt,
+    });
+    C.saveThread(activeConversationId, messages);
+    renderThread();
+    refreshInbox();
+  },
+  onEnded: function (payload) {
+    var id = payload && payload.conversationId;
+    if (!id || id !== activeConversationId) return;
+    endedConversationId = id;
+    showBanner('ended', 'This conversation has ended.', true);
+  },
+});
+
+/* ============ Boot ============ */
+renderWho();
+if (!C.getAuth()) {
+  showStep('phone');
+  showOverlay(true);
+}
+var saved = localStorage.getItem('myaiha.chat.conversationId');
+if (saved) {
+  openConversation(saved);
+  refreshInbox();
+} else {
+  messages.push({ id: 'welcome', role: 'bot', text: "Hi! I'm MyAIha — sign in above, or continue as a guest and ask me anything.", createdAt: new Date().toISOString() });
+  renderThread();
+  refreshInbox();
+}
+</script>
+</body>
+</html>
