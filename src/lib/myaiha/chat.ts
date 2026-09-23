@@ -123,21 +123,34 @@ async function api<T>(path: string, init?: RequestInit): Promise<T> {
 
 export async function sendMessage(
   text: string,
-  opts: { conversationId?: string | null; questionnaireCode?: string } = {}
+  opts: {
+    conversationId?: string | null;
+    questionnaireCode?: string;
+    /** Start a fresh conversation (engine stales old pending exchanges). */
+    newConversation?: boolean;
+  } = {}
 ): Promise<SendResult> {
   const body: Record<string, unknown> = {
     channelCode: MYAIHA.CHANNEL_CODE,
     senderPhone: getChatPhone(),
     text,
   };
-  if (opts.conversationId) body.conversationId = opts.conversationId;
+  // Pending ids are never sent back to the engine: fresh sends go out without
+  // a conversation id (optionally flagged newConversation), replies under a
+  // pending id are ignored by the UI until the real id arrives.
+  const conversationId =
+    opts.conversationId && !opts.conversationId.startsWith('pending-')
+      ? opts.conversationId
+      : undefined;
+  if (conversationId) body.conversationId = conversationId;
   if (opts.questionnaireCode) body.questionnaireCode = opts.questionnaireCode;
+  if (opts.newConversation) body.newConversation = true;
 
   const res = await api<SendResult>('/webhooks/web', {
     method: 'POST',
     body: JSON.stringify(body),
   });
-  if (res.conversationId) {
+  if (res.conversationId && !res.conversationId.startsWith('pending-')) {
     safeSet(MYAIHA_STORAGE.conversation, res.conversationId);
   }
   return res;

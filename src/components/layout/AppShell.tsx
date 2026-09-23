@@ -4,12 +4,14 @@ import { usePathname } from 'next/navigation';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 
-const STANDALONE_ROUTES = ['/products/emr'];
+const STANDALONE_ROUTES = ['/products/emr', '/myaiha'];
 
 /**
  * Renders the site chrome (header, padded main, footer) for regular pages.
- * The /products/emr landing page ships its own patienthub-style header and
- * footer, so it is rendered standalone without the site chrome.
+ * Standalone routes ship their own chrome: the /products/emr landing page has
+ * its own patienthub-style header/footer, and the MyAIha pages (marketing +
+ * chat app) are full-viewport app surfaces — the marketing page links back to
+ * ehealthwares itself and to the full app.
  */
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
