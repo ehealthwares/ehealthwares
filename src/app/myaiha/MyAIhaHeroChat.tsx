@@ -1,17 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import {
-  connectSocket,
-  fetchThread,
-  getChatPhone,
-  getStoredConversationId,
-  sendMessage,
-  setStoredConversationId,
-  type ChatMessage,
-  type RawExchange,
-} from '@/lib/myaiha/chat';
+import { useMyAIhaChat } from '@/lib/myaiha/use-chat';
+import { parseQuestionOptions } from '@/lib/myaiha/parse-options';
+import type { ChatMessage } from '@/lib/myaiha/chat';
 
 /**
  * Live "try it now" chat on the MyAIha landing page. Talks to the conversation
@@ -19,143 +12,17 @@ import {
  * phone, mirroring the storefront chatbot behavior.
  */
 
-const WELCOME =
-  '👋 Hi! I\'m MyAIha — ask about symptoms, appointments, prescriptions or anything else.';
-
 export function MyAIhaHeroChat() {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const { messages, connected, sending, send } = useMyAIhaChat();
   const [draft, setDraft] = useState('');
-  const [sending, setSending] = useState(false);
-  const [connected, setConnected] = useState(false);
-  const conversationRef = useRef<string | null>(null);
-  const endedRef = useRef<string | null>(null);
+  const [answeredOptions, setAnsweredOptions] = useState<Set<string>>(new Set());
   const bodyRef = useRef<HTMLDivElement>(null);
 
-  const render = useCallback(() => {
+  useEffect(() => {
     if (bodyRef.current) {
       bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
     }
-  }, []);
-
-  const loadThread = useCallback(async (conversationId: string) => {
-    try {
-      const page = await fetchThread(conversationId);
-      const items = (page.items ?? []).slice().reverse();
-      setMessages(
-        items.map((x: RawExchange) => ({
-          id: x.id,
-          role: x.direction === 'inbound' ? 'user' : 'bot',
-          text: x.text,
-          createdAt: x.createdAt,
-        }))
-      );
-    } catch {
-      /* keep current view */
-    }
-  }, []);
-
-  useEffect(() => {
-    // Warm the guest identity before the socket handshake.
-    getChatPhone();
-    const stored = getStoredConversationId();
-    if (stored) {
-      conversationRef.current = stored;
-      void loadThread(stored);
-    } else {
-      setMessages([{ id: 'welcome', role: 'bot', text: WELCOME, createdAt: new Date().toISOString() }]);
-    }
-
-    const socket = connectSocket({
-      onConnect: () => setConnected(true),
-      onDisconnect: () => setConnected(false),
-      onMessage: (raw) => {
-        if (!raw?.conversationId) return;
-        if (endedRef.current && raw.conversationId === endedRef.current) return;
-        const current = conversationRef.current;
-        if (current && raw.conversationId !== current) return;
-        conversationRef.current = raw.conversationId;
-        setStoredConversationId(raw.conversationId);
-        if (raw.direction !== 'inbound') {
-          setMessages((prev) => {
-            if (prev.some((m) => m.id === raw.id)) return prev;
-            return [
-              ...prev,
-              { id: raw.id, role: 'bot', text: raw.text, createdAt: raw.createdAt },
-            ];
-          });
-        }
-      },
-      onEnded: (payload) => {
-        if (!payload?.conversationId) return;
-        if (payload.conversationId !== conversationRef.current) return;
-        endedRef.current = payload.conversationId;
-        conversationRef.current = null;
-        setStoredConversationId(null);
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: `ended-${Date.now()}`,
-            role: 'bot',
-            text: 'This conversation ended — send another message to start fresh.',
-            createdAt: new Date().toISOString(),
-          },
-        ]);
-      },
-    });
-
-    return () => {
-      // The hero widget shares the app socket only while mounted; the app page
-      // reconnects with its own identity when opened.
-      socket?.removeAllListeners();
-    };
-  }, [loadThread]);
-
-  useEffect(() => {
-    render();
-  }, [messages, sending, render]);
-
-  const send = useCallback(
-    async (text: string) => {
-      const trimmed = text.trim();
-      if (!trimmed || sending) return;
-      setSending(true);
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `opt-${Date.now()}`,
-          role: 'user',
-          text: trimmed,
-          createdAt: new Date().toISOString(),
-        },
-      ]);
-      try {
-        const res = await sendMessage(trimmed, {
-          conversationId: conversationRef.current,
-        });
-        if (res.conversationId) {
-          conversationRef.current = res.conversationId;
-          setStoredConversationId(res.conversationId);
-        }
-        // Replies usually arrive via socket; poll once as a fallback.
-        setTimeout(() => {
-          if (conversationRef.current) void loadThread(conversationRef.current);
-        }, 900);
-      } catch (err) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: `err-${Date.now()}`,
-            role: 'bot',
-            text: `⚠️ ${err instanceof Error ? err.message : 'Message failed to send.'}`,
-            createdAt: new Date().toISOString(),
-          },
-        ]);
-      } finally {
-        setSending(false);
-      }
-    },
-    [sending, loadThread]
-  );
+  }, [messages, sending]);
 
   return (
     <div className="relative">
@@ -184,16 +51,15 @@ export function MyAIhaHeroChat() {
           className="flex h-64 flex-col gap-2.5 overflow-y-auto px-4 py-4"
         >
           {messages.map((m) => (
-            <div
+            <MessageBubble
               key={m.id}
-              className={`max-w-[82%] rounded-xl px-3.5 py-2 text-[13px] leading-relaxed ${
-                m.role === 'user'
-                  ? 'self-end rounded-br-sm bg-teal-500 font-medium text-teal-950'
-                  : 'self-start rounded-bl-sm border border-navy-100 bg-navy-50'
-              }`}
-            >
-              {m.text}
-            </div>
+              message={m}
+              disabled={answeredOptions.has(m.id) || sending}
+              onOptionSelect={(value) => {
+                setAnsweredOptions((prev) => new Set(prev).add(m.id));
+                void send(value);
+              }}
+            />
           ))}
           {sending && (
             <div className="flex max-w-[82%] items-center gap-1 self-start rounded-xl border border-navy-100 bg-navy-50 px-4 py-3">
@@ -238,6 +104,52 @@ export function MyAIhaHeroChat() {
           Open the full MyAIha app →
         </Link>
       </div>
+    </div>
+  );
+}
+
+function MessageBubble({
+  message,
+  onOptionSelect,
+  disabled,
+}: {
+  message: ChatMessage;
+  onOptionSelect?: (value: string) => void;
+  disabled?: boolean;
+}) {
+  const isUser = message.role === 'user';
+  const parsed = !isUser ? parseQuestionOptions(message.text) : null;
+
+  if (parsed) {
+    return (
+      <div className="max-w-[82%] self-start rounded-xl border border-navy-100 bg-navy-50 px-3.5 py-2.5 text-[13px] leading-relaxed">
+        <div className="mb-2 font-semibold text-navy-800">{parsed.title}</div>
+        <div className="flex flex-col gap-1.5">
+          {parsed.options.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              disabled={disabled}
+              onClick={() => onOptionSelect?.(opt.value)}
+              className="rounded-lg border border-teal-500/30 bg-teal-500/10 px-3 py-1.5 text-left text-[12.5px] font-medium text-teal-700 transition hover:bg-teal-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={`max-w-[82%] rounded-xl px-3.5 py-2 text-[13px] leading-relaxed ${
+        isUser
+          ? 'self-end rounded-br-sm bg-teal-500 font-medium text-teal-950'
+          : 'self-start rounded-bl-sm border border-navy-100 bg-navy-50'
+      }`}
+    >
+      {message.text}
     </div>
   );
 }

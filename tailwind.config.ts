@@ -32,6 +32,7 @@ const withShades = (hex: string) => {
 
 const config: Config = {
   content: ['./src/**/*.{ts,tsx}'],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {

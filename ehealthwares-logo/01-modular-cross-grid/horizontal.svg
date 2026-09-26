@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 450 140" role="img" aria-label="eHealthWares logo">
+  <g transform="translate(18 18) scale(0.8125)">
+    <rect x="16" y="16" width="28" height="28" rx="7" fill="#7C3AED"/>
+    <rect x="50" y="16" width="28" height="28" rx="7" fill="#0D9488"/>
+    <rect x="84" y="16" width="28" height="28" rx="7" fill="#F59E0B"/>
+    <rect x="16" y="50" width="28" height="28" rx="7" fill="#0D9488"/>
+    <rect x="50" y="50" width="28" height="28" rx="7" fill="#2563EB"/>
+    <rect x="84" y="50" width="28" height="28" rx="7" fill="#0D9488"/>
+    <rect x="16" y="84" width="28" height="28" rx="7" fill="#F43F5E"/>
+    <rect x="50" y="84" width="28" height="28" rx="7" fill="#0D9488"/>
+    <rect x="84" y="84" width="28" height="28" rx="7" fill="#16A34A"/>
+  </g>
+  <text x="142" y="82" font-family="'Segoe UI','Helvetica Neue',Arial,sans-serif" font-size="40" font-weight="700" fill="#0F2A43">eHealth<tspan fill="#2563EB">Wares</tspan></text>
+</svg>

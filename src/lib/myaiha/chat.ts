@@ -5,7 +5,8 @@
  * browser (same as the storefront chatbot): the webhook is public by design
  * (guest web chat), and realtime updates arrive over the engine's socket.
  *
- * Inbound messages are addressed by channel code (EHEALTHWARES_WEBCHAT_BOT);
+ * Inbound messages are addressed by channel code — MyAIha's own surfaces use
+ * MYAIHA_WEBCHAT, the marketing-site widget uses EHEALTHWARES_WEBCHAT_BOT;
  * auth token, when signed in, rides both REST and socket.
  */
 
@@ -29,10 +30,20 @@ export interface RawExchange {
   direction: 'inbound' | 'outbound';
   text: string;
   createdAt: string;
+  orphan?: boolean;
+}
+
+/** Emitted when the webhook flow promotes a pending-<id> thread to a real conversation. */
+export interface ConversationCreatedPayload {
+  oldConversationId?: string;
+  newConversationId: string;
+  channelId?: string;
+  participantId?: string;
 }
 
 export interface ConversationSummary {
   conversationId: string;
+  channelId?: string;
   title?: string;
   status?: string;
   lastMessage?: { text: string; direction: string; createdAt: string };
@@ -126,12 +137,14 @@ export async function sendMessage(
   opts: {
     conversationId?: string | null;
     questionnaireCode?: string;
+    /** Channel to address the inbound bot; defaults to MyAIha's own channel. */
+    channelCode?: string;
     /** Start a fresh conversation (engine stales old pending exchanges). */
     newConversation?: boolean;
   } = {}
 ): Promise<SendResult> {
   const body: Record<string, unknown> = {
-    channelCode: MYAIHA.CHANNEL_CODE,
+    channelCode: opts.channelCode ?? MYAIHA.CHANNEL_CODE_MYAIHA,
     senderPhone: getChatPhone(),
     text,
   };
@@ -177,6 +190,21 @@ export async function fetchInbox(
     `/conversations/inbox?${params.toString()}`
   );
   return res.items ?? [];
+}
+
+/**
+ * Resolve a channel's id from its code (e.g. to exclude the marketing-site
+ * bot's conversations from the MyAIha inbox). Returns null when unavailable.
+ */
+export async function fetchChannelIdByCode(code: string): Promise<string | null> {
+  try {
+    const res = await api<{ id?: string }>(
+      `/channels/by-code/${encodeURIComponent(code)}`
+    );
+    return res?.id ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export async function findParticipant(
@@ -252,6 +280,7 @@ export interface SocketHandlers {
   onConnect?: () => void;
   onDisconnect?: () => void;
   onMessage?: (raw: RawExchange) => void;
+  onConversationCreated?: (payload: ConversationCreatedPayload) => void;
   onEnded?: (payload: { conversationId?: string }) => void;
 }
 
@@ -291,6 +320,7 @@ function attach(handlers: SocketHandlers): void {
   socket.off('disconnect');
   socket.off('conversation.message.created');
   socket.off('conversation.message.orphan');
+  socket.off('conversation.created');
   socket.off('conversation.ended');
   socket.on('connect', () => handlers.onConnect?.());
   socket.on('disconnect', () => handlers.onDisconnect?.());
@@ -301,6 +331,11 @@ function attach(handlers: SocketHandlers): void {
   socket.on(
     'conversation.message.orphan',
     (raw: RawExchange) => handlers.onMessage?.(raw)
+  );
+  socket.on(
+    'conversation.created',
+    (payload: ConversationCreatedPayload) =>
+      handlers.onConversationCreated?.(payload)
   );
   socket.on('conversation.ended', (payload: { conversationId?: string }) =>
     handlers.onEnded?.(payload)

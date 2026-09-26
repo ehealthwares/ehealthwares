@@ -5,3 +5,8 @@ out/
 temporary_screenshots/
 tsconfig.tsbuildinfo
 
+
+.env.dev
+.env.local
+.DS_Store
+package-lock.json

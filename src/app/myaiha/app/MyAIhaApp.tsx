@@ -14,6 +14,7 @@ import {
   clearConversationState,
   connectSocket,
   disconnectSocket,
+  fetchChannelIdByCode,
   fetchInbox,
   fetchThread,
   findParticipant,
@@ -24,6 +25,7 @@ import {
   type ChatMessage,
   type ConversationSummary,
 } from '@/lib/myaiha/chat';
+import { MYAIHA } from '@/lib/myaiha/config';
 
 /**
  * MyAIha chat app — identity phone+OTP sign-in (via the site's server proxy),
@@ -173,6 +175,7 @@ export function MyAIhaApp() {
 
   const activeIdRef = useRef<string | null>(null);
   const endedRef = useRef<string | null>(null);
+  const participantIdRef = useRef<string | null>(null);
   const threadEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToEnd = useCallback(() => {
@@ -260,6 +263,18 @@ export function MyAIhaApp() {
     }
   }
 
+  // The home-page widget shares this participant's phone but is a different
+  // bot; resolve its channel id once so its conversations stay out of MyAIha.
+  const excludedChannelRef = useRef<string | null | undefined>(undefined);
+  const siteChannelId = useCallback(async () => {
+    if (excludedChannelRef.current === undefined) {
+      excludedChannelRef.current = await fetchChannelIdByCode(
+        MYAIHA.CHANNEL_CODE_SITE
+      );
+    }
+    return excludedChannelRef.current;
+  }, []);
+
   const refreshInbox = useCallback(async () => {
     setInboxLoading(true);
     try {
@@ -268,14 +283,20 @@ export function MyAIhaApp() {
         setConversations([]);
         return;
       }
-      const items = await fetchInbox(participant.id);
-      setConversations(items);
+      participantIdRef.current = participant.id;
+      const [items, excluded] = await Promise.all([
+        fetchInbox(participant.id),
+        siteChannelId(),
+      ]);
+      setConversations(
+        excluded ? items.filter((c) => c.channelId !== excluded) : items
+      );
     } catch {
       /* offline — keep current list */
     } finally {
       setInboxLoading(false);
     }
-  }, []);
+  }, [siteChannelId]);
 
   const refreshThread = useCallback(async (conversationId: string) => {
     try {
@@ -369,6 +390,24 @@ export function MyAIhaApp() {
         }
         void refreshInbox();
       },
+      onConversationCreated: (payload) => {
+        // Ignore creations for a different participant sharing the broadcast.
+        if (
+          payload.participantId &&
+          participantIdRef.current &&
+          payload.participantId !== participantIdRef.current
+        ) {
+          return;
+        }
+        if (activeIdRef.current === payload.newConversationId) return;
+        // Adopt the real conversation the pending thread was promoted to.
+        activeIdRef.current = payload.newConversationId;
+        setActiveId(payload.newConversationId);
+        endedRef.current = null;
+        setEndedId(null);
+        void refreshThread(payload.newConversationId);
+        void refreshInbox();
+      },
       onEnded: (payload) => {
         const id = payload?.conversationId;
         if (!id || id !== activeIdRef.current) return;
@@ -412,6 +451,7 @@ export function MyAIhaApp() {
       try {
         const res = await sendMessage(trimmed, {
           conversationId: activeIdRef.current,
+          channelCode: MYAIHA.CHANNEL_CODE_MYAIHA,
           questionnaireCode: opts.questionnaireCode,
           newConversation: opts.newConversation,
         });
@@ -437,9 +477,15 @@ export function MyAIhaApp() {
               try {
                 const participant = await findParticipant(getChatPhone());
                 if (!participant) return;
-                const items = await fetchInbox(participant.id);
-                setConversations(items);
-                const match = items.find(
+                const [items, excluded] = await Promise.all([
+                  fetchInbox(participant.id),
+                  siteChannelId(),
+                ]);
+                const visible = excluded
+                  ? items.filter((c) => c.channelId !== excluded)
+                  : items;
+                setConversations(visible);
+                const match = visible.find(
                   (c) => c.title === opts.questionnaireTitle
                 );
                 if (match && !activeIdRef.current) {
@@ -468,7 +514,7 @@ export function MyAIhaApp() {
         setSending(false);
       }
     },
-    [sending, refreshThread, refreshInbox]
+    [sending, refreshThread, refreshInbox, siteChannelId]
   );
 
   /**

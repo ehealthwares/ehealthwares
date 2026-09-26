@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { MyAIhaHeroChat } from './MyAIhaHeroChat';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ehealthwares.com';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://conversation.ehealthwares.com';
 
 export const metadata: Metadata = {
   title: 'MyAIha — Conversational AI for Connected Care',

@@ -14,6 +14,7 @@ import { Careers } from '@/components/sections/Careers';
 import { StatsBar } from '@/components/sections/StatsBar';
 import { Box } from '@mantine/core';
 import { CTABanner } from '@/components/sections/CTABanner';
+import { ChatbotWidget } from '@/components/chatbot/ChatbotWidget';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ehealthwares.com';
 
@@ -118,6 +119,7 @@ export default async function HomePage({
       <Careers careers={careerList} />
       <StatsBar />
       <CTABanner section={ctaSection} />
+      <ChatbotWidget />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
