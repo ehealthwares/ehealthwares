@@ -16,30 +16,30 @@ import type {
 
 const CACHE_TTL_SECONDS = Number(process.env.CACHE_TTL_SECONDS)|| 3600
 const isServer = typeof window === 'undefined';
+// Server-side fetches need an absolute base (runtime env).
+// Client-side calls are SAME-ORIGIN: the browser hits /api/... on whatever host
+// served the page (nginx / the Next.js route handler proxy it to the backend).
+// NEXT_PUBLIC_API_URL is an optional build-time override — left unset so the
+// fallback (same-origin) applies.
 const API_BASE = isServer
   ? (process.env.API_URL || 'https://api.ehealthwares.com/ehealthwares')
-  : (process.env.NEXT_PUBLIC_API_URL || '/');
+  : (process.env.NEXT_PUBLIC_API_URL || '');
 
 export async function apiGet<T>(path: string): Promise<T | null> {
     const url = `${API_BASE}${path}`;
 
-        console.log('API CALL:', url);
-
   try {
 
-    const res = await fetch(`${API_BASE}${path}`, { 
+    const res = await fetch(`${API_BASE}${path}`, {
       next: {
         revalidate: CACHE_TTL_SECONDS,
         tags: ['ehealthwares']
       }
      });
-         console.log('API RESPONSE:', res.status, url);
 
     if (!res.ok) return null;
     return res.json();
   } catch(error) {
-             console.log('API RESPONSE:', error, url);
-
     return null;
   }
 }
