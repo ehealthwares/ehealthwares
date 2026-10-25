@@ -150,9 +150,10 @@ export default function MyAIhaPage() {
               Every patient message becomes a connected care action
             </h1>
             <p className="mt-5 max-w-md text-[15px] leading-relaxed text-navy-100">
-              MyAIha listens across WhatsApp, SMS, web and voice, then routes each
-              conversation to the right specialist, service or record — turning
-              scattered messages into coordinated care.
+              An AI healthcare assistant connecting patients and providers
+              anywhere, on any channel. It turns health data into intelligent
+              intents and matches you with the right specialists for a truly
+              connected care experience.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link

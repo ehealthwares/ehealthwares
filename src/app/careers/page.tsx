@@ -39,6 +39,24 @@ const FALLBACK_CAREERS = [
     description:
       'Own the roadmap for clinical products, working with clinicians and customers to shape modern healthcare software.',
   },
+  {
+    _id: 'fallback-4',
+    title: 'Healthcare Data Scientist / Healthcare Informatics',
+    location: 'Lagos, Nigeria (Hybrid)',
+    type: 'full-time',
+    department: 'Data & Analytics',
+    description:
+      'Turn healthcare and pharmacy data into clinical and operational insight — data pipelines, entity resolution and analytics over RxSoft, EMR and formulary datasets, applying healthcare informatics standards (ICD, LOINC, SNOMED).',
+  },
+  {
+    _id: 'fallback-5',
+    title: 'Healthcare Coder',
+    location: 'Lagos, Nigeria (Hybrid)',
+    type: 'full-time',
+    department: 'Health Information Management',
+    description:
+      'Translate clinical documentation into accurate ICD-10/ICD-11, CPT and procedure codes, and support coding quality, audit and reimbursement workflows across EMR and billing systems.',
+  },
 ];
 
 const TYPE_STYLES: Record<string, { label: string; bg: string; text: string }> = {
