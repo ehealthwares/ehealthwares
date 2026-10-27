@@ -124,6 +124,7 @@ export interface Career {
   type: 'full-time' | 'contract' | 'remote';
   department: string | null;
   description: string | null;
+  detailHtml?: string;
   imageUrl: string | null;
   isActive: boolean;
 }
