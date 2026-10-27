@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { IconArrowRight, IconMapPin, IconMail } from '@tabler/icons-react';
 import { ehealthwaresApi } from '@/lib/api';
 import { SectionHeader } from '@/components/shared';
+import { TYPE_STYLES } from './typeStyles';
 
 export const metadata: Metadata = {
   title: 'Careers — Join the eHealthwares Team',
@@ -58,12 +59,6 @@ const FALLBACK_CAREERS = [
       'Translate clinical documentation into accurate ICD-10/ICD-11, CPT and procedure codes, and support coding quality, audit and reimbursement workflows across EMR and billing systems.',
   },
 ];
-
-const TYPE_STYLES: Record<string, { label: string; bg: string; text: string }> = {
-  'full-time': { label: 'Full-time', bg: 'rgba(37,99,235,0.12)', text: '#1D4ED8' },
-  contract: { label: 'Contract', bg: 'rgba(245,158,11,0.15)', text: '#B45309' },
-  remote: { label: 'Remote', bg: 'rgba(13,148,136,0.12)', text: '#0F766E' },
-};
 
 export default async function CareersPage() {
   let careers: any[] = [];
@@ -137,13 +132,23 @@ export default async function CareersPage() {
                     </p>
                   )}
                   <div className="mt-auto pt-6">
-                    <Link
-                      href={`mailto:info@ehealthwares.com?subject=Application: ${encodeURIComponent(career.title)}`}
-                      className="btn-gradient w-full !py-2.5"
-                    >
-                      Apply Now
-                      <IconArrowRight size={16} />
-                    </Link>
+                    {career.slug ? (
+                      <Link
+                        href={`/careers/${career.slug}`}
+                        className="btn-gradient w-full !py-2.5"
+                      >
+                        Apply Now
+                        <IconArrowRight size={16} />
+                      </Link>
+                    ) : (
+                      <Link
+                        href={`mailto:info@ehealthwares.com?subject=Application: ${encodeURIComponent(career.title)}`}
+                        className="btn-gradient w-full !py-2.5"
+                      >
+                        Apply Now
+                        <IconArrowRight size={16} />
+                      </Link>
+                    )}
                   </div>
                 </div>
               );
