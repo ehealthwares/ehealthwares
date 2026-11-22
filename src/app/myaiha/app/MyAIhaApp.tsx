@@ -26,6 +26,12 @@ import {
   type ConversationSummary,
 } from '@/lib/myaiha/chat';
 import { MYAIHA } from '@/lib/myaiha/config';
+import {
+  fetchMyAppointments,
+  isUpcoming,
+  type MyAIhaAppointment,
+} from '@/lib/myaiha/appointments';
+import { CallButton } from '@/components/chatbot/CallButton';
 
 /**
  * MyAIha chat app — identity phone+OTP sign-in (via the site's server proxy),
@@ -161,6 +167,14 @@ export function MyAIhaApp() {
   const [sending, setSending] = useState(false);
   const [connected, setConnected] = useState(false);
   const [endedId, setEndedId] = useState<string | null>(null);
+
+  /* --------------------------- appointments -------------------------- */
+  const [appointmentsOpen, setAppointmentsOpen] = useState(false);
+  const [appointments, setAppointments] = useState<MyAIhaAppointment[]>([]);
+  const [appointmentsLoading, setAppointmentsLoading] = useState(false);
+  const [appointmentsError, setAppointmentsError] = useState<string | null>(
+    null
+  );
 
   /* --------------------------- layout/tools -------------------------- */
   const [sidebarOpen, setSidebarOpen] = useState(false); // mobile slide-over
@@ -556,6 +570,21 @@ export function MyAIhaApp() {
     ]);
   }
 
+  const openAppointments = useCallback(async () => {
+    setAppointmentsOpen(true);
+    setAppointmentsLoading(true);
+    setAppointmentsError(null);
+    try {
+      setAppointments(await fetchMyAppointments());
+    } catch (err) {
+      setAppointmentsError(
+        err instanceof Error ? err.message : 'Could not load appointments.'
+      );
+    } finally {
+      setAppointmentsLoading(false);
+    }
+  }, []);
+
   /* ----------------------------- render ----------------------------- */
   const activeConv = conversations.find((c) => c.conversationId === activeId);
   const title = activeConv?.title ?? (activeId ? 'Conversation' : 'New conversation');
@@ -596,6 +625,15 @@ export function MyAIhaApp() {
           </div>
         </div>
         <div className="flex flex-none items-center gap-1.5">
+          <button
+            type="button"
+            title="Appointments"
+            aria-label="Appointments"
+            onClick={() => void openAppointments()}
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#e2e8ee] text-navy-500 transition hover:bg-[#f6f9fb] dark:border-[#1e2c3d] dark:text-[#a7b4c1] dark:hover:bg-white/5"
+          >
+            📅
+          </button>
           {telHref ? (
             <a
               href={telHref}
@@ -967,6 +1005,90 @@ export function MyAIhaApp() {
           </div>
         </main>
       </div>
+
+      {/* ---------- Appointments ---------- */}
+      {appointmentsOpen && (
+        <div className="fixed inset-0 z-40 flex justify-end bg-[#040c16]/50">
+          <button
+            type="button"
+            aria-label="Close appointments"
+            className="absolute inset-0"
+            onClick={() => setAppointmentsOpen(false)}
+          />
+          <aside className="relative z-10 flex h-full w-full max-w-md flex-col bg-white shadow-2xl dark:bg-[#101c2b]">
+            <div className="flex items-start justify-between border-b border-[#e2e8ee] px-5 py-4 dark:border-[#1e2c3d]">
+              <div>
+                <h2 className="text-base font-extrabold text-navy-900 dark:text-[#eef3f8]">
+                  Appointments
+                </h2>
+                <p className="mt-0.5 text-xs text-navy-400 dark:text-[#79879a]">
+                  Join a consultation from here, no chat needed.
+                </p>
+              </div>
+              <button
+                type="button"
+                aria-label="Close appointments"
+                onClick={() => setAppointmentsOpen(false)}
+                className="text-lg text-navy-400 transition hover:text-navy-600"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-5">
+              {appointmentsLoading && (
+                <p className="text-[13px] text-navy-400">
+                  Loading appointments…
+                </p>
+              )}
+              {!appointmentsLoading && appointmentsError && (
+                <p className="text-[13px] text-red-600">{appointmentsError}</p>
+              )}
+              {!appointmentsLoading &&
+                !appointmentsError &&
+                appointments.length === 0 && (
+                  <p className="text-[13px] text-navy-400">
+                    No appointments yet — book one in chat and it will show
+                    here.
+                  </p>
+                )}
+              {appointments.map((appointment) => (
+                <div
+                  key={appointment.id}
+                  className="rounded-xl border border-[#e2e8ee] p-3.5 dark:border-[#1e2c3d]"
+                >
+                  <div className="text-[13.5px] font-bold text-navy-900 dark:text-[#eef3f8]">
+                    {appointment.providerName ?? 'Your clinician'}
+                  </div>
+                  <div className="mt-0.5 text-xs text-navy-500 dark:text-[#a7b4c1]">
+                    {appointment.date} · {appointment.startTime}
+                    {appointment.modality ? ` · ${appointment.modality}` : ''}
+                  </div>
+                  {appointment.reason && (
+                    <div className="mt-1 text-[11.5px] text-navy-400">
+                      {appointment.reason}
+                    </div>
+                  )}
+                  <div className="mt-3 flex items-center justify-between gap-2">
+                    <span className="rounded-full bg-navy-50 px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wide text-navy-500 dark:bg-white/10 dark:text-[#a7b4c1]">
+                      {appointment.status ?? 'SCHEDULED'}
+                    </span>
+                    {isUpcoming(appointment) &&
+                      (appointment.modality === 'VIDEO' ||
+                        appointment.modality === 'AUDIO') && (
+                        <CallButton
+                          callId={appointment.callId}
+                          label="Join call"
+                          audioOnly={appointment.modality === 'AUDIO'}
+                        />
+                      )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </aside>
+        </div>
+      )}
 
       {/* ---------- Auth overlay ---------- */}
       {showAuth && (

@@ -15,6 +15,7 @@ import {
   MYAIHA_STORAGE,
 } from './config';
 import { getAuth } from './identity';
+import type { ChatControl } from './rtc';
 
 export interface ChatMessage {
   id: string;
@@ -22,6 +23,8 @@ export interface ChatMessage {
   text: string;
   createdAt: string;
   optimistic?: boolean;
+  /** Actionable control (e.g. `call.connect`) carried by this message. */
+  control?: ChatControl;
 }
 
 export interface RawExchange {
@@ -31,6 +34,7 @@ export interface RawExchange {
   text: string;
   createdAt: string;
   orphan?: boolean;
+  control?: ChatControl;
 }
 
 /** Emitted when the webhook flow promotes a pending-<id> thread to a real conversation. */
