@@ -12,6 +12,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/products-services`, lastModified: LAST_MODIFIED, changeFrequency: 'weekly', priority: 0.9 },
     { url: `${SITE_URL}/products/emr`, lastModified: LAST_MODIFIED, changeFrequency: 'weekly', priority: 0.9 },
     { url: `${SITE_URL}/careers`, lastModified: LAST_MODIFIED, changeFrequency: 'weekly', priority: 0.6 },
+    { url: `${SITE_URL}/posts`, lastModified: LAST_MODIFIED, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${SITE_URL}/partnerships`, lastModified: LAST_MODIFIED, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${SITE_URL}/privacy-policy`, lastModified: LAST_MODIFIED, changeFrequency: 'yearly', priority: 0.3 },
     { url: `${SITE_URL}/terms-of-service`, lastModified: LAST_MODIFIED, changeFrequency: 'yearly', priority: 0.3 },
@@ -40,7 +41,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.7,
       })),
       ...(articles ?? []).map((a) => ({
-        url: `${SITE_URL}/articles/${a.slug}`,
+        url: `${SITE_URL}/posts/${a.slug}`,
         lastModified: LAST_MODIFIED,
         changeFrequency: 'weekly' as const,
         priority: 0.7,

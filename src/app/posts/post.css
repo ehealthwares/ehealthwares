@@ -1,0 +1,441 @@
+/* ------------------------------------------------------------------ */
+/*  Long-form post body                                               */
+/*                                                                    */
+/*  The HTML stored in `ehealthwares_articles.body` uses a small,      */
+/*  deliberate class vocabulary so editorial content stays portable    */
+/*  across the website and the admin CMS:                              */
+/*                                                                    */
+/*    p.post-lead, h2, h3, h4, blockquote, ul, ol,                    */
+/*    .post-callout > .post-callout-label,                            */
+/*    .post-steps > .post-step > .post-step-num,                      */
+/*    .post-flow > .post-flow-node / .post-flow-arrow,                */
+/*    table.post-table                                                */
+/* ------------------------------------------------------------------ */
+
+.post-body {
+  color: #163453;
+  font-size: 1.0625rem;
+  line-height: 1.85;
+}
+
+.post-body > * + * {
+  margin-top: 1.5rem;
+}
+
+.post-body p {
+  color: #2f5a85;
+  font-weight: 400;
+}
+
+.post-body strong {
+  color: #0f2a43;
+  font-weight: 650;
+}
+
+.post-body em {
+  color: #163453;
+}
+
+.post-body a {
+  color: #2563eb;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+.post-body a:hover {
+  color: #7c3aed;
+}
+
+/* Lead paragraph ---------------------------------------------------- */
+
+.post-body p.post-lead {
+  position: relative;
+  padding-left: 1.5rem;
+  border-left: 3px solid #2563eb;
+  color: #0f2a43;
+  font-size: 1.25rem;
+  line-height: 1.7;
+  font-weight: 500;
+  margin-bottom: 2.5rem;
+}
+
+.post-body p.post-lead + * {
+  margin-top: 0;
+}
+
+/* Headings ---------------------------------------------------------- */
+
+.post-body h2 {
+  position: relative;
+  margin-top: 3.5rem;
+  padding-top: 1.25rem;
+  font-family: Urbanist, Inter, system-ui, sans-serif;
+  font-size: 1.875rem;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: #0f2a43;
+  scroll-margin-top: 7rem;
+}
+
+.post-body h2::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2.75rem;
+  height: 4px;
+  border-radius: 999px;
+  background-image: linear-gradient(90deg, #2563eb, #7c3aed, #0d9488);
+}
+
+.post-body h2 em {
+  font-style: normal;
+  background: linear-gradient(100deg, #2563eb, #7c3aed);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.post-body h3 {
+  margin-top: 2.5rem;
+  font-family: Urbanist, Inter, system-ui, sans-serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: #0d9488;
+  scroll-margin-top: 7rem;
+}
+
+.post-body h4 {
+  margin-top: 1.75rem;
+  font-family: Urbanist, Inter, system-ui, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0f2a43;
+}
+
+.post-body h2 + *,
+.post-body h3 + *,
+.post-body h4 + * {
+  margin-top: 0.9rem;
+}
+
+/* Pull quote -------------------------------------------------------- */
+
+.post-body blockquote {
+  position: relative;
+  margin: 2.75rem 0;
+  padding: 1.9rem 2rem 1.9rem 3.4rem;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(37, 99, 235, 0.14);
+  border-left: 4px solid #2563eb;
+  background:
+    radial-gradient(ellipse 80% 120% at 0% 0%, rgba(37, 99, 235, 0.08), transparent 65%),
+    rgba(255, 255, 255, 0.75);
+  color: #0f2a43;
+  font-family: Urbanist, Inter, system-ui, sans-serif;
+  font-size: 1.3rem;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+}
+
+.post-body blockquote::before {
+  content: '“';
+  position: absolute;
+  left: 1rem;
+  top: 0.4rem;
+  font-family: Georgia, serif;
+  font-size: 3.5rem;
+  line-height: 1;
+  color: rgba(37, 99, 235, 0.28);
+}
+
+.post-body blockquote p {
+  margin: 0;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+.post-body blockquote cite {
+  display: block;
+  margin-top: 0.9rem;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 0.78rem;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+/* Lists ------------------------------------------------------------- */
+
+.post-body ul,
+.post-body ol {
+  margin: 1.5rem 0;
+  padding: 0;
+  list-style: none;
+}
+
+.post-body ul > li {
+  position: relative;
+  padding-left: 1.6rem;
+  margin-bottom: 0.85rem;
+  color: #2f5a85;
+}
+
+.post-body ul > li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.72em;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 0.15rem;
+  background-image: linear-gradient(135deg, #2563eb, #7c3aed);
+}
+
+.post-body ol {
+  counter-reset: post-list;
+}
+
+.post-body ol > li {
+  position: relative;
+  counter-increment: post-list;
+  padding-left: 2.5rem;
+  margin-bottom: 0.9rem;
+  color: #2f5a85;
+}
+
+.post-body ol > li::before {
+  content: counter(post-list, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  top: 0.1em;
+  font-family: Urbanist, Inter, system-ui, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #7c3aed;
+}
+
+.post-body li > strong {
+  color: #0f2a43;
+}
+
+/* Callout ----------------------------------------------------------- */
+
+.post-body .post-callout {
+  margin: 2.5rem 0;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(13, 148, 136, 0.2);
+  border-left: 4px solid #0d9488;
+  background: rgba(13, 148, 136, 0.06);
+  padding: 1.6rem 1.8rem;
+}
+
+.post-body .post-callout-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #0f766e;
+}
+
+.post-body .post-callout p {
+  margin: 0;
+  color: #163453;
+}
+
+/* Numbered steps ("layers") ----------------------------------------- */
+
+.post-body .post-steps {
+  margin: 2.5rem 0;
+  border: 1px solid rgba(15, 42, 67, 0.1);
+  border-radius: 1.5rem;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 0.5rem 1.75rem;
+}
+
+.post-body .post-step {
+  display: flex;
+  gap: 1.25rem;
+  padding: 1.35rem 0;
+  border-bottom: 1px solid rgba(15, 42, 67, 0.08);
+}
+
+.post-body .post-step:last-child {
+  border-bottom: none;
+}
+
+.post-body .post-step-num {
+  flex: 0 0 auto;
+  font-family: Urbanist, Inter, system-ui, sans-serif;
+  font-size: 1.6rem;
+  font-weight: 800;
+  line-height: 1;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.post-body .post-step h4 {
+  margin: 0 0 0.25rem;
+  font-size: 1.02rem;
+  color: #0f2a43;
+}
+
+.post-body .post-step p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: #5583ab;
+}
+
+/* Flow diagram ------------------------------------------------------ */
+
+.post-body .post-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  margin: 2.5rem 0;
+  padding: 2rem 1.5rem;
+  border-radius: 1.5rem;
+  border: 1px solid rgba(15, 42, 67, 0.1);
+  background: rgba(242, 246, 250, 0.9);
+}
+
+.post-body .post-flow-node {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(15, 42, 67, 0.14);
+  background: #fff;
+  padding: 0.5rem 0.9rem;
+  font-size: 0.8rem;
+  font-weight: 650;
+  color: #0f2a43;
+  box-shadow: 0 4px 12px -6px rgba(15, 42, 67, 0.25);
+}
+
+.post-body .post-flow-node.is-accent {
+  border-color: transparent;
+  background-image: linear-gradient(135deg, #2563eb, #7c3aed);
+  color: #fff;
+}
+
+.post-body .post-flow-node.is-teal {
+  border-color: transparent;
+  background-image: linear-gradient(135deg, #0d9488, #2563eb);
+  color: #fff;
+}
+
+.post-body .post-flow-arrow {
+  font-size: 1rem;
+  color: #8faecb;
+}
+
+/* Comparison table -------------------------------------------------- */
+
+.post-body table.post-table {
+  width: 100%;
+  margin: 2.5rem 0;
+  border-collapse: collapse;
+  border-radius: 1.25rem;
+  overflow: hidden;
+  border: 1px solid rgba(15, 42, 67, 0.1);
+  background: #fff;
+}
+
+.post-body table.post-table th {
+  padding: 0.95rem 1.15rem;
+  text-align: left;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #64748b;
+  background: rgba(242, 246, 250, 0.9);
+  border-bottom: 1px solid rgba(15, 42, 67, 0.1);
+}
+
+.post-body table.post-table td {
+  padding: 0.9rem 1.15rem;
+  font-size: 0.93rem;
+  line-height: 1.6;
+  color: #2f5a85;
+  border-bottom: 1px solid rgba(15, 42, 67, 0.07);
+  vertical-align: top;
+}
+
+.post-body table.post-table td:first-child {
+  font-weight: 600;
+  color: #0f2a43;
+}
+
+.post-body table.post-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Inline "figure" style content panels ------------------------------ */
+
+.post-body .post-panel {
+  margin: 2.5rem 0;
+  border-radius: 1.5rem;
+  border: 1px solid rgba(15, 42, 67, 0.1);
+  background: rgba(255, 255, 255, 0.8);
+  padding: 1.75rem 1.9rem;
+}
+
+.post-body .post-panel h4 {
+  margin-top: 0;
+  color: #0f2a43;
+}
+
+.post-body hr {
+  margin: 3rem 0;
+  border: none;
+  border-top: 1px solid rgba(15, 42, 67, 0.1);
+}
+
+@media (max-width: 640px) {
+  .post-body {
+    font-size: 1rem;
+  }
+
+  .post-body p.post-lead {
+    font-size: 1.12rem;
+    padding-left: 1.1rem;
+  }
+
+  .post-body h2 {
+    font-size: 1.55rem;
+    margin-top: 2.75rem;
+  }
+
+  .post-body blockquote {
+    padding: 1.5rem 1.4rem 1.5rem 2.9rem;
+    font-size: 1.1rem;
+  }
+
+  .post-body .post-steps {
+    padding: 0.25rem 1.25rem;
+  }
+
+  .post-body table.post-table th,
+  .post-body table.post-table td {
+    padding: 0.75rem 0.8rem;
+    font-size: 0.82rem;
+  }
+}

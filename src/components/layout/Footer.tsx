@@ -14,6 +14,7 @@ const productLinks = [
 const companyLinks = [
   { label: 'About', href: '/about' },
   { label: 'Careers', href: '/careers' },
+  { label: 'Posts', href: '/posts' },
   { label: 'Partnerships', href: '/partnerships' },
   { label: 'Products & Services', href: '/products-services' },
   { label: 'Contact', href: '/contact' },

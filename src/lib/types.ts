@@ -101,6 +101,8 @@ export interface Article {
   title: string;
   slug: string;
   excerpt: string | null;
+  /** Rich HTML body rendered on the post page. */
+  body?: string | null;
   imageUrl: string | null;
   category: string | null;
   publishedAt: string | null;

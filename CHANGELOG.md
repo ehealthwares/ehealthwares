@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] - 2026-11-22
+
+### Added
+- Posts section: `/posts` index (theme filters, search, featured post) and `/posts/[slug]` long-form post view with table of contents, related posts and previous/next navigation
+- 36 editorial posts across five healthcare themes, seeded via `seed/seeds/ehealthwares/inline/articles.json`
+- `src/lib/posts.ts` shared theme, reading-time and related-post helpers
+
+### Changed
+- Primary navigation: "Partnerships" replaced by "Posts" (the Partnerships page remains at `/partnerships`)
+- Homepage "Latest Topics" renamed "Latest Posts", now links to `/posts`
+- Sitemap lists `/posts` routes; `/articles/:slug` permanently redirects to `/posts/:slug`
+
+### Removed
+- Legacy `/articles/[slug]` route (replaced by `/posts/[slug]` redirect)
+- Five placeholder sample articles archived (`isActive: false`)
+
+---
+
 ## [Unreleased] - 2026-10-25
 
 ### Added
