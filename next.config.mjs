@@ -2,6 +2,15 @@
 const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
+  async redirects() {
+    return [
+      // The Posts section replaced the old /articles/:slug route.
+      { source: '/articles', destination: '/posts', permanent: true },
+      { source: '/articles/:slug', destination: '/posts/:slug', permanent: true },
+      // Partnerships left the primary nav; keep old links working.
+      { source: '/partners', destination: '/partnerships', permanent: false },
+    ];
+  },
   images: {
     remotePatterns: [
       {

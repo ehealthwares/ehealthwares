@@ -1,19 +1,12 @@
 import Link from 'next/link';
-import { IconArrowRight, IconCalendar } from '@tabler/icons-react';
+import { IconArrowRight, IconCalendar, IconClock } from '@tabler/icons-react';
 import type { Article } from '@/lib/types';
 import { SectionHeader, SiteImage } from '@/components/shared';
+import { formatPostDate, getPostCategory, readingTime } from '@/lib/posts';
 
 interface LatestTopicsProps {
   articles: Article[];
 }
-
-const CATEGORY_COLORS: Record<string, string> = {
-  Pharmacy: '#16A34A',
-  Interoperability: '#2563EB',
-  Laboratory: '#0D9488',
-  'AI & Automation': '#7C3AED',
-  Strategy: '#F59E0B',
-};
 
 export function LatestTopics({ articles }: LatestTopicsProps) {
   if (!articles?.length) return null;
@@ -22,7 +15,7 @@ export function LatestTopics({ articles }: LatestTopicsProps) {
     <section className="relative overflow-hidden py-24">
       <div className="relative mx-auto max-w-7xl px-6">
         <SectionHeader
-          chip="Latest Topics"
+          chip="Latest Posts"
           title={
             <>
               Insights from the <span className="text-gradient">digital health frontier</span>
@@ -33,11 +26,11 @@ export function LatestTopics({ articles }: LatestTopicsProps) {
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {articles.slice(0, 6).map((article) => {
-            const catColor = article.category ? CATEGORY_COLORS[article.category] : '#2563EB';
+            const theme = getPostCategory(article.category);
             return (
               <Link
                 key={article._id}
-                href={`/articles/${article.slug}`}
+                href={`/posts/${article.slug}`}
                 className="bento-card group flex flex-col"
               >
                 {article.imageUrl && (
@@ -52,7 +45,7 @@ export function LatestTopics({ articles }: LatestTopicsProps) {
                     {article.category && (
                       <span
                         className="absolute left-4 top-4 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow-md"
-                        style={{ backgroundColor: catColor }}
+                        style={{ backgroundColor: theme.color }}
                       >
                         {article.category}
                       </span>
@@ -69,18 +62,17 @@ export function LatestTopics({ articles }: LatestTopicsProps) {
                     </p>
                   )}
                   <div className="mt-auto flex items-center justify-between pt-5">
-                    {article.publishedAt ? (
-                      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-navy-400">
-                        <IconCalendar size={14} />
-                        {new Date(article.publishedAt).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                        })}
-                      </span>
-                    ) : (
-                      <span />
-                    )}
+                    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-navy-400">
+                      <IconClock size={14} />
+                      {readingTime(article)} min
+                      {article.publishedAt && (
+                        <>
+                          <span className="text-navy-200">•</span>
+                          <IconCalendar size={13} />
+                          {formatPostDate(article.publishedAt)}
+                        </>
+                      )}
+                    </span>
                     <span className="inline-flex items-center gap-1 text-sm font-bold text-blue-600">
                       Read
                       <IconArrowRight size={15} className="transition-transform group-hover:translate-x-1" />
@@ -90,6 +82,13 @@ export function LatestTopics({ articles }: LatestTopicsProps) {
               </Link>
             );
           })}
+        </div>
+
+        <div className="mt-12 text-center">
+          <Link href="/posts" className="btn-outline-brand">
+            View all posts
+            <IconArrowRight size={16} />
+          </Link>
         </div>
       </div>
     </section>

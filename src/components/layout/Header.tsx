@@ -36,7 +36,7 @@ const links = [
   { label: 'Products & Services', href: '/products-services' },
   { label: 'EMR', href: '/products/emr' },
   { label: 'Careers', href: '/careers' },
-  { label: 'Partnerships', href: '/partnerships' },
+  { label: 'Posts', href: '/posts' },
   { label: 'About', href: '/about' },
   { label: 'Contact', href: '/contact' },
 ];
