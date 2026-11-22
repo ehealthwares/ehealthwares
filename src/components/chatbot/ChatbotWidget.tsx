@@ -18,6 +18,7 @@ import {
 import { useMyAIhaChat } from '@/lib/myaiha/use-chat';
 import { parseQuestionOptions } from '@/lib/myaiha/parse-options';
 import type { ChatMessage } from '@/lib/myaiha/chat';
+import { CallControlMessage } from './CallButton';
 import { MYAIHA } from '@/lib/myaiha/config';
 
 const SITE_WELCOME =
@@ -222,6 +223,7 @@ function MessageBubble({
             </button>
           ))}
         </div>
+        {message.control && <CallControlMessage control={message.control} />}
         <div className="mt-1 pr-1 text-right text-[10px] text-navy-400">{time}</div>
       </div>
     );
@@ -236,6 +238,7 @@ function MessageBubble({
       } ${message.optimistic ? 'opacity-70' : ''}`}
     >
       <p className="whitespace-pre-wrap break-words">{message.text}</p>
+      {message.control && <CallControlMessage control={message.control} />}
       <div
         className={`mt-1 text-right text-[10px] ${
           isUser ? 'text-white/60' : 'text-navy-400'
