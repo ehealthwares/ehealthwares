@@ -44,7 +44,13 @@ function initials(name: string): string {
 
 function readError(data: unknown, fallback: string): string {
   if (data && typeof data === 'object') {
-    const message = (data as { message?: unknown }).message;
+    const payload = data as {
+      message?: unknown;
+      error?: { message?: unknown } | string;
+    };
+    const nested =
+      payload.error && typeof payload.error === 'object' ? payload.error.message : undefined;
+    const message = payload.message ?? nested;
     if (Array.isArray(message) && message.length) return String(message[0]);
     if (typeof message === 'string' && message.trim()) return message;
   }
