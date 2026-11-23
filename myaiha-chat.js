@@ -21,7 +21,9 @@
     {
       API_BASE: 'http://localhost:8090/api',
       SOCKET_BASE: 'http://localhost:8090',
-      CHANNEL_CODE: 'EHEALTHWARES_WEBCHAT_BOT',
+      // The webhook endpoint (/api/webhooks/web) resolves a WEB channel; the
+      // WEBCHAT channel code is rejected with "Configured WEB channel was not found".
+      CHANNEL_CODE: 'MYAIHA_WEB',
       IDENTITY_BASE: 'http://localhost:8092/api',
       BOT_NAME: 'MyAIha',
     },
