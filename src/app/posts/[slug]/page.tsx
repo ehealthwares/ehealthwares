@@ -22,6 +22,7 @@ import {
   withHeadingAnchors,
 } from '@/lib/posts';
 import { PostCard } from '../PostsExplorer';
+import { Comments } from './Comments';
 import '../post.css';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ehealthwares.com';
@@ -193,6 +194,9 @@ export default async function PostPage({ params }: PageProps) {
                     {theme.label}
                   </Link>
                 </div>
+
+                {/* Comments */}
+                <Comments postSlug={post.slug} />
 
                 {/* Prev / next */}
                 {(previous || next) && (
