@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useMyAIhaChat } from '@/lib/myaiha/use-chat';
 import { parseQuestionOptions } from '@/lib/myaiha/parse-options';
 import type { ChatMessage } from '@/lib/myaiha/chat';
+import { CallControlMessage } from '@/components/chatbot/CallButton';
 
 /**
  * Live "try it now" chat on the MyAIha landing page. Talks to the conversation
@@ -137,6 +138,7 @@ function MessageBubble({
             </button>
           ))}
         </div>
+        {message.control && <CallControlMessage control={message.control} />}
       </div>
     );
   }
@@ -150,6 +152,7 @@ function MessageBubble({
       }`}
     >
       {message.text}
+      {message.control && <CallControlMessage control={message.control} />}
     </div>
   );
 }

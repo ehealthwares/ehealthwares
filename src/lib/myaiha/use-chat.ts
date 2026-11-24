@@ -76,6 +76,7 @@ export function useMyAIhaChat(options: UseMyAIhaChatOptions = {}): MyAIhaChat {
           role: x.direction === 'inbound' ? 'user' : 'bot',
           text: x.text,
           createdAt: x.createdAt,
+          control: x.control,
         }))
       );
     } catch {
@@ -124,7 +125,16 @@ export function useMyAIhaChat(options: UseMyAIhaChatOptions = {}): MyAIhaChat {
         if (raw.direction !== 'inbound') {
           setMessages((prev) => {
             if (prev.some((m) => m.id === raw.id)) return prev;
-            return [...prev, { id: raw.id, role: 'bot', text: raw.text, createdAt: raw.createdAt }];
+            return [
+              ...prev,
+              {
+                id: raw.id,
+                role: 'bot',
+                text: raw.text,
+                createdAt: raw.createdAt,
+                control: raw.control,
+              },
+            ];
           });
         }
       },
