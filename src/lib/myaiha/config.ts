@@ -9,7 +9,7 @@
 
 export const MYAIHA = {
   /** MyAIha's own web-chat channel — used by the /myaiha surfaces. */
-  CHANNEL_CODE_MYAIHA: 'MYAIHA_WEBCHAT',
+  CHANNEL_CODE_MYAIHA: 'MYAIHA_WEB',
   /** The marketing-site chatbot widget channel — used by the home-page bot. */
   CHANNEL_CODE_SITE: 'EHEALTHWARES_WEBCHAT_BOT',
   /** Conversation engine base (REST + socket origin). */
