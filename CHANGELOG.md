@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] - 2026-11-26
+
+### Changed
+- Post comments: a second composer in the sticky sidebar travels with the page scroll and unmounts once the inline comments section is visible, so only one comment box is ever on screen. Both composers share the draft and the optional name/phone/email dialog.
+
+---
+
 ## [Unreleased] - 2026-11-23
 
 ### Added
