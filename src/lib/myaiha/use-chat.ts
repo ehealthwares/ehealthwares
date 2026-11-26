@@ -155,6 +155,15 @@ export function useMyAIhaChat(options: UseMyAIhaChatOptions = {}): MyAIhaChat {
         setStoredConversationId(payload.newConversationId);
         void loadThread(payload.newConversationId);
       },
+      onConversationAdopted: (payload) => {
+        const next = payload.conversationId;
+        if (!next || next.startsWith('pending-')) return;
+        if (conversationRef.current === next) return;
+        conversationRef.current = next;
+        pendingRef.current = null;
+        setStoredConversationId(next);
+        void loadThread(next);
+      },
       onEnded: (payload) => {
         if (!payload?.conversationId) return;
         if (payload.conversationId !== conversationRef.current) return;

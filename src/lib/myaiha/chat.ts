@@ -285,6 +285,14 @@ export interface SocketHandlers {
   onDisconnect?: () => void;
   onMessage?: (raw: RawExchange) => void;
   onConversationCreated?: (payload: ConversationCreatedPayload) => void;
+  /**
+   * Exchange-layer adoption: the pending thread was backfilled into a real
+   * conversation and this participant was told directly (`conversation.adopted`).
+   */
+  onConversationAdopted?: (payload: {
+    pendingConversationId?: string;
+    conversationId: string;
+  }) => void;
   onEnded?: (payload: { conversationId?: string }) => void;
 }
 
@@ -325,6 +333,7 @@ function attach(handlers: SocketHandlers): void {
   socket.off('conversation.message.created');
   socket.off('conversation.message.orphan');
   socket.off('conversation.created');
+  socket.off('conversation.adopted');
   socket.off('conversation.ended');
   socket.on('connect', () => handlers.onConnect?.());
   socket.on('disconnect', () => handlers.onDisconnect?.());
@@ -340,6 +349,26 @@ function attach(handlers: SocketHandlers): void {
     'conversation.created',
     (payload: ConversationCreatedPayload) =>
       handlers.onConversationCreated?.(payload)
+  );
+  // The exchange layer backfilled a pending-<participantId> thread into the real
+  // conversation and notified this participant directly. Prefer the dedicated
+  // handler (the event is already scoped to this user); fall back to the
+  // conversation.created callback for surfaces that only implement that.
+  socket.on(
+    'conversation.adopted',
+    (payload: { pendingConversationId?: string; conversationId?: string }) => {
+      const conversationId = payload?.conversationId;
+      if (!conversationId || conversationId.startsWith('pending-')) return;
+      const pendingConversationId = payload?.pendingConversationId;
+      if (handlers.onConversationAdopted) {
+        handlers.onConversationAdopted({ pendingConversationId, conversationId });
+        return;
+      }
+      handlers.onConversationCreated?.({
+        oldConversationId: pendingConversationId,
+        newConversationId: conversationId,
+      });
+    }
   );
   socket.on('conversation.ended', (payload: { conversationId?: string }) =>
     handlers.onEnded?.(payload)

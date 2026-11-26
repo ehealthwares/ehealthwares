@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { InstallPrompt } from '../install-prompt';
 import { MyAIhaApp } from './MyAIhaApp';
 
 export const metadata: Metadata = {
@@ -9,5 +10,10 @@ export const metadata: Metadata = {
 };
 
 export default function MyAIhaAppPage() {
-  return <MyAIhaApp />;
+  return (
+    <>
+      <MyAIhaApp />
+      <InstallPrompt />
+    </>
+  );
 }

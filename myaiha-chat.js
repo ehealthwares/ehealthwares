@@ -21,7 +21,9 @@
     {
       API_BASE: 'http://localhost:8090/api',
       SOCKET_BASE: 'http://localhost:8090',
-      CHANNEL_CODE: 'EHEALTHWARES_WEBCHAT_BOT',
+      // The webhook endpoint (/api/webhooks/web) resolves a WEB channel; the
+      // WEBCHAT channel code is rejected with "Configured WEB channel was not found".
+      CHANNEL_CODE: 'MYAIHA_WEB',
       IDENTITY_BASE: 'http://localhost:8092/api',
       BOT_NAME: 'MyAIha',
     },
@@ -193,9 +195,45 @@
     };
     if (opts.conversationId) body.conversationId = opts.conversationId;
     if (opts.questionnaireCode) body.questionnaireCode = opts.questionnaireCode;
+    if (opts.attachments && opts.attachments.length) {
+      body.attachments = opts.attachments;
+    }
     var res = await apiFetch('/webhooks/web', { method: 'POST', body: body });
     if (res.conversationId) storageSet(STORAGE.conversation, res.conversationId);
     return res;
+  }
+
+  /**
+   * Upload a file/audio/document and send it as the answer.
+   *
+   * The bytes go to POST /uploads (Cloudinary → S3 → local, the same chain the
+   * channel senders use); the returned URL is sent as an attachment so the
+   * engine can resolve it exactly like an inbound WhatsApp document.
+   */
+  async function sendAttachment(file, opts) {
+    opts = opts || {};
+    var form = new FormData();
+    form.append('file', file, file.name || 'attachment');
+    var auth = getAuth();
+    var res = await fetch(CONFIG.API_BASE + '/uploads', {
+      method: 'POST',
+      headers: auth && auth.token ? { Authorization: 'Bearer ' + auth.token } : {},
+      body: form,
+    });
+    var stored = await res.json().catch(function () { return {}; });
+    if (!res.ok || !stored.url) {
+      throw new Error(stored.message || 'Upload failed');
+    }
+    // The engine validates a document/audio answer from the value itself, so the
+    // URL is the message text (attachments only carry the metadata alongside it).
+    return sendMessage(stored.url, {
+      conversationId: opts.conversationId,
+      attachments: [{
+        url: stored.url,
+        mimeType: stored.mimeType || file.type,
+        fileName: stored.fileName || file.name,
+      }],
+    });
   }
 
   async function fetchThread(conversationId, cursor) {
@@ -330,6 +368,7 @@
     setChatPhone: setChatPhone,
     isGuest: isGuest,
     sendMessage: sendMessage,
+    sendAttachment: sendAttachment,
     fetchThread: fetchThread,
     fetchInbox: fetchInbox,
     findParticipant: findParticipant,

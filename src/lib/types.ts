@@ -109,6 +109,18 @@ export interface Article {
   isActive: boolean;
 }
 
+/** A public comment on a post, as returned by the comments API. */
+export interface PostComment {
+  _id: string;
+  key?: string;
+  postSlug: string;
+  name: string;
+  body: string;
+  isAnonymous: boolean;
+  commentedAt: string;
+  isActive?: boolean;
+}
+
 export interface InvestorData {
   _id: string;
   label: string;

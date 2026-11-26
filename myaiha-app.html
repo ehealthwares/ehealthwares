@@ -136,6 +136,23 @@
   .bubble{padding:10px 14px;border-radius:var(--radius-md);font-size:13.5px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere;}
   .msg-row.in .bubble{background:var(--card);border:1px solid var(--line);border-bottom-left-radius:4px;}
   .msg-row.out .bubble{background:var(--navy-900);color:#fff;border-bottom-right-radius:4px;}
+  .join-call{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:9px 14px;border:0;border-radius:999px;background:var(--teal-500);color:#fff;font-size:13px;font-weight:600;cursor:pointer}
+  .join-call:hover{background:var(--teal-600)}
+  .answer-row{display:flex;flex-wrap:wrap;gap:8px;padding:0 0 10px 46px}
+  .answer-btn{border:1px solid var(--line);background:var(--card);color:var(--ink-900);border-radius:999px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer}
+  .answer-btn:hover{border-color:var(--teal-500);color:var(--teal-600)}
+  .answer-btn.primary{background:var(--teal-500);border-color:var(--teal-500);color:#fff}
+  .answer-input{flex:1;min-width:140px;border:1px solid var(--line);border-radius:999px;padding:9px 14px;font-size:13px;color:var(--ink-900);background:var(--card)}
+  .mh-call{position:fixed;right:18px;bottom:18px;width:320px;z-index:60;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:0 18px 40px rgba(8,21,36,.18);overflow:hidden}
+  .mh-call-head{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line)}
+  .mh-call-title{font-weight:600;font-size:13px;color:var(--ink-900)}
+  .mh-call-status{font-size:11px;color:var(--ink-400)}
+  .mh-call-videos{position:relative;background:#081524;aspect-ratio:4/3}
+  .mh-call-remote{width:100%;height:100%;object-fit:cover;display:block}
+  .mh-call-local{position:absolute;right:8px;bottom:8px;width:32%;aspect-ratio:4/3;object-fit:cover;border-radius:8px;border:1px solid rgba(255,255,255,.35);background:#000}
+  .mh-call-actions{display:flex;gap:8px;padding:10px 12px}
+  .mh-call-actions button{flex:1;border:1px solid var(--line);background:var(--paper);color:var(--ink-900);border-radius:999px;padding:8px 10px;font-size:12px;font-weight:600;cursor:pointer}
+  .mh-call-leave{background:#fdecec!important;border-color:#f6c9c9!important;color:#b4271f!important}
   .msg-meta{font-size:10.5px;color:var(--ink-400);margin-top:4px;}
   .msg-row.out .msg-meta{text-align:right;}
   .typing{display:flex;gap:4px;padding:4px 2px;}
@@ -305,7 +322,7 @@
 
     <div class="composer">
       <div class="composer-tools">
-        <div class="icon-btn" title="Attach">📎</div>
+        <div class="icon-btn" id="attachBtn" title="Attach a file">📎</div>
       </div>
       <textarea class="composer-input" id="composerInput" rows="1" placeholder="Message MyAIha..."></textarea>
       <button class="send-btn" id="sendBtn">Send</button>
@@ -315,6 +332,7 @@
 
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <script src="myaiha-chat.js"></script>
+<script src="myaiha-call.js"></script>
 <script>
 /* MyAIha app — identity sign-in (phone + OTP, e2e via the identity service)
    and live chat over the conversation engine. */
@@ -509,12 +527,72 @@ function buildMsgRow(m) {
   var bubble = document.createElement('div');
   bubble.className = 'bubble';
   bubble.textContent = m.text;
+
+  // A call is answered by joining it. Browsers have no in-chat call plugin, so
+  // when the engine appends "Join the call: <url>" (and marks the message
+  // renderMode: "call"), surface it as a real action instead of plain text.
+  var joinBtn = null;
+  var callLink = /Join the call:\s*(https?:\/\/\S+)/i.exec(m.text || '');
+  if (callLink) {
+    bubble.textContent = (m.text || '').replace(callLink[0], '').trim();
+    joinBtn = document.createElement('button');
+    joinBtn.type = 'button';
+    joinBtn.className = 'join-call';
+    joinBtn.textContent = 'Join the call';
+    joinBtn.addEventListener('click', function () {
+      // The room is the conversation: open the embedded call, which can be
+      // popped out into its own window from the panel.
+      MyAIhaCall.open({
+        conversationId: (currentConversationId() || roomFromLink(callLink[1])),
+        phone: C.getChatPhone ? C.getChatPhone() : undefined,
+      });
+    });
+  }
   var meta = document.createElement('div');
   meta.className = 'msg-meta';
   meta.textContent = fmtTime(m.createdAt) || 'Now';
-  col.appendChild(sender); col.appendChild(bubble); col.appendChild(meta);
+  col.appendChild(sender);
+  col.appendChild(bubble);
+  if (joinBtn) col.appendChild(joinBtn);
+  col.appendChild(meta);
   row.appendChild(av); row.appendChild(col);
   return row;
+}
+
+function currentConversationId() {
+  return activeConversationId || null;
+}
+
+/** The conversation id carried by a `.../call/<id>` link. */
+function roomFromLink(url) {
+  var m = /\/call\/([A-Za-z0-9]+)\s*$/.exec(url || '');
+  return m ? m[1] : null;
+}
+
+
+/** Answers rendered from the engine's question text ("KEY: label" lines). */
+function parseOptions(text) {
+  var out = [];
+  (text || '').split('\n').forEach(function (line) {
+    // askQuestion appends "key: label" per option, terminated by a zero-width space.
+    var m = /^\s*([A-Za-z0-9_.:-]+)\s*:\s*(.+?)\s*\u200b?$/.exec(line);
+    if (m) out.push({ key: m[1].trim(), label: m[2].replace(/\u200b/g, '').trim() });
+  });
+  return out;
+}
+
+/** A date-ish question still arrives as text; a native date field is the best UI. */
+function wantsDate(text) {
+  return /\b(YYYY-MM-DD|dd/mm/yyyy)\b/i.test(text || '');
+}
+
+/** A location question expects "lat,lng" (the engine parses that form). */
+function wantsLocation(text) {
+  return /\b(location|nearest|clinic|address|where)\b/i.test(text || '');
+}
+
+function wantsNumber(text) {
+  return /\b(number|how many|age|quantity)\b/i.test(text || '');
 }
 
 function renderThread() {
@@ -524,6 +602,60 @@ function renderThread() {
   sep.textContent = new Date().toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' });
   msgEl.appendChild(sep);
   messages.forEach(function (m) { msgEl.appendChild(buildMsgRow(m)); });
+
+  // Controls for whatever the bot asked last: option buttons, a date field or a
+  // numeric field. The answer is just the value — the engine validates it.
+  var lastBot = null;
+  for (var i = messages.length - 1; i >= 0; i--) {
+    if (messages[i].role !== 'user') { lastBot = messages[i]; break; }
+  }
+  if (lastBot) {
+    var opts = parseOptions(lastBot.text);
+    var row = document.createElement('div');
+    row.className = 'answer-row';
+    if (opts.length) {
+      opts.forEach(function (opt) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'answer-btn';
+        b.textContent = opt.label;
+        b.addEventListener('click', function () { send(opt.key); });
+        row.appendChild(b);
+      });
+      msgEl.appendChild(row);
+    } else if (wantsLocation(lastBot.text) && navigator.geolocation) {
+      var shareLoc = document.createElement('button');
+      shareLoc.type = 'button';
+      shareLoc.className = 'answer-btn primary';
+      shareLoc.textContent = 'Share my location';
+      shareLoc.addEventListener('click', function () {
+        shareLoc.disabled = true;
+        shareLoc.textContent = 'Locating…';
+        navigator.geolocation.getCurrentPosition(
+          function (pos) { send(pos.coords.latitude + ',' + pos.coords.longitude); },
+          function () { shareLoc.disabled = false; shareLoc.textContent = 'Location unavailable — type it instead'; },
+          { enableHighAccuracy: true, timeout: 10000 },
+        );
+      });
+      row.appendChild(shareLoc);
+      msgEl.appendChild(row);
+    } else if (wantsDate(lastBot.text) || wantsNumber(lastBot.text)) {
+      var input = document.createElement('input');
+      input.className = 'answer-input';
+      input.type = wantsDate(lastBot.text) ? 'date' : 'number';
+      input.placeholder = wantsDate(lastBot.text) ? 'YYYY-MM-DD' : 'Enter a number';
+      var go = document.createElement('button');
+      go.type = 'button';
+      go.className = 'answer-btn primary';
+      go.textContent = 'Send';
+      go.addEventListener('click', function () {
+        if (input.value) send(input.value);
+      });
+      row.appendChild(input);
+      row.appendChild(go);
+      msgEl.appendChild(row);
+    }
+  }
   if (sending) {
     var row = document.createElement('div');
     row.className = 'msg-row in';
@@ -661,6 +793,46 @@ function setConn(ok) {
   document.getElementById('connBtn').style.color = ok ? 'var(--teal-500)' : 'var(--ink-400)';
   document.getElementById('mhSub').textContent = ok ? 'Online' : 'Offline';
 }
+(function deepLinkToCall() {
+  var m = /\/call\/([A-Za-z0-9]+)\s*$/.exec(window.location.pathname || '');
+  var id = new URLSearchParams(window.location.search).get('call') || (m && m[1]);
+  if (!id) return;
+  // Give the chat a moment to restore its session, then open the thread and join.
+  setTimeout(function () {
+    if (typeof openConversation === 'function') openConversation(id);
+    try {
+      MyAIhaCall.open({ conversationId: id, phone: C.getChatPhone ? C.getChatPhone() : undefined });
+    } catch (e) {
+      console.warn('[myaiha] cannot start the call from the link:', e.message);
+    }
+  }, 400);
+})();
+
+
+// Attachments: the paperclip opens a picker, uploads, and sends the file as the
+// answer to a file/audio/document question.
+(function wireAttachments() {
+  var input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.pdf,.doc,.docx,.txt,.csv,image/*,audio/*,video/*';
+  input.style.display = 'none';
+  document.body.appendChild(input);
+
+  input.addEventListener('change', function () {
+    var file = input.files && input.files[0];
+    if (!file) return;
+    C.sendAttachment(file, { conversationId: activeConversationId })
+      .then(function () { refreshThread(); })
+      .catch(function (err) {
+        showBanner('ended', 'Could not upload: ' + err.message, false);
+      });
+    input.value = '';
+  });
+
+  var attach = document.getElementById('attachBtn');
+  if (attach) attach.addEventListener('click', function () { input.click(); });
+})();
+
 C.connect({
   onConnect: function () { setConn(true); },
   onDisconnect: function () { setConn(false); },
@@ -677,6 +849,8 @@ C.connect({
       id: raw.id || raw._id || String(Date.now()),
       role: raw.direction === 'inbound' ? 'user' : 'bot',
       text: raw.text,
+      renderMode: raw.renderMode || null,
+      questionType: raw.questionType || null,
       createdAt: raw.createdAt,
     });
     C.saveThread(activeConversationId, messages);

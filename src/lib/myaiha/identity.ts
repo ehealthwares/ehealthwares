@@ -62,7 +62,7 @@ export function normalizePhone(phone: string): string {
 
 export async function requestOtp(
   phone: string,
-  channel: 'sms' | 'whatsapp' = 'sms'
+  channel: 'sms' | 'whatsapp' | 'sms_proxy' = 'sms_proxy'
 ): Promise<RequestOtpResult> {
   const res = await fetch('/api/myaiha/request-otp', {
     method: 'POST',

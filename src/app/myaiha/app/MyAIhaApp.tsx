@@ -422,6 +422,17 @@ export function MyAIhaApp() {
         void refreshThread(payload.newConversationId);
         void refreshInbox();
       },
+      onConversationAdopted: (payload) => {
+        const id = payload.conversationId;
+        if (!id || id.startsWith('pending-')) return;
+        if (activeIdRef.current === id) return;
+        activeIdRef.current = id;
+        setActiveId(id);
+        endedRef.current = null;
+        setEndedId(null);
+        void refreshThread(id);
+        void refreshInbox();
+      },
       onEnded: (payload) => {
         const id = payload?.conversationId;
         if (!id || id !== activeIdRef.current) return;

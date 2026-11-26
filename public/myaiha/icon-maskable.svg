@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="MyAIha">
+  <defs>
+    <linearGradient id="myaiha-bg-maskable" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#14b8a6" />
+      <stop offset="1" stop-color="#2563eb" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#myaiha-bg-maskable)" />
+  <g transform="translate(256 256) scale(0.72) translate(-256 -256)">
+    <path
+      d="M256 96c-70 0-128 44-128 104 0 32 18 60 46 79l-18 57 63-31c12 3 24 4 37 4 70 0 128-44 128-104S326 96 256 96z"
+      fill="#ffffff"
+      opacity="0.96"
+    />
+    <path
+      d="M206 214c6 40 32 64 68 74"
+      fill="none"
+      stroke="#0f766e"
+      stroke-width="24"
+      stroke-linecap="round"
+    />
+  </g>
+</svg>
