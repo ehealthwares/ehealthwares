@@ -22,7 +22,10 @@ import {
   withHeadingAnchors,
 } from '@/lib/posts';
 import { PostCard } from '../PostsExplorer';
-import { Comments } from './Comments';
+import { PostCommentsProvider } from './comments/context';
+import { CommentsDialog } from './comments/CommentsDialog';
+import { CommentsThread } from './comments/CommentsThread';
+import { StickyComposer } from './comments/StickyComposer';
 import '../post.css';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ehealthwares.com';
@@ -173,113 +176,118 @@ export default async function PostPage({ params }: PageProps) {
       {/* Body */}
       <section className="relative py-14">
         <div className="mx-auto max-w-6xl px-6">
-          <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_260px]">
-            <div className="min-w-0">
-              <div className="mx-auto max-w-3xl">
-                <div
-                  className="post-body"
-                  dangerouslySetInnerHTML={{ __html: body }}
-                />
+          <PostCommentsProvider postSlug={post.slug}>
+            <CommentsDialog />
+            <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_280px] xl:grid-cols-[minmax(0,1fr)_320px]">
+              <div className="min-w-0">
+                <div className="mx-auto max-w-3xl">
+                  <div
+                    className="post-body"
+                    dangerouslySetInnerHTML={{ __html: body }}
+                  />
 
-                {/* Tags */}
-                <div className="mt-12 flex flex-wrap items-center gap-2 border-t border-navy-100 pt-8">
-                  <span className="text-xs font-bold uppercase tracking-[0.14em] text-navy-300">
-                    Filed under
-                  </span>
-                  <Link
-                    href="/posts"
-                    className="rounded-full border px-3 py-1 text-xs font-semibold text-white"
-                    style={{ backgroundColor: theme.color, borderColor: theme.color }}
-                  >
-                    {theme.label}
-                  </Link>
-                </div>
-
-                {/* Comments */}
-                <Comments postSlug={post.slug} />
-
-                {/* Prev / next */}
-                {(previous || next) && (
-                  <div className="mt-10 grid gap-4 sm:grid-cols-2">
-                    {previous ? (
-                      <Link
-                        href={`/posts/${previous.slug}`}
-                        className="group rounded-2xl border border-navy-100 bg-white/70 p-5 transition-all hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-glass"
-                      >
-                        <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-navy-300">
-                          Previous
-                        </span>
-                        <p className="mt-2 line-clamp-2 font-display text-sm font-bold leading-snug text-navy-900 group-hover:text-blue-600">
-                          {previous.title}
-                        </p>
-                      </Link>
-                    ) : (
-                      <span />
-                    )}
-                    {next && (
-                      <Link
-                        href={`/posts/${next.slug}`}
-                        className="group rounded-2xl border border-navy-100 bg-white/70 p-5 text-right transition-all hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-glass"
-                      >
-                        <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-navy-300">
-                          Next
-                        </span>
-                        <p className="mt-2 line-clamp-2 font-display text-sm font-bold leading-snug text-navy-900 group-hover:text-blue-600">
-                          {next.title}
-                        </p>
-                      </Link>
-                    )}
+                  {/* Tags */}
+                  <div className="mt-12 flex flex-wrap items-center gap-2 border-t border-navy-100 pt-8">
+                    <span className="text-xs font-bold uppercase tracking-[0.14em] text-navy-300">
+                      Filed under
+                    </span>
+                    <Link
+                      href="/posts"
+                      className="rounded-full border px-3 py-1 text-xs font-semibold text-white"
+                      style={{ backgroundColor: theme.color, borderColor: theme.color }}
+                    >
+                      {theme.label}
+                    </Link>
                   </div>
-                )}
-              </div>
-            </div>
 
-            {/* Sidebar */}
-            <aside className="hidden lg:block">
-              <div className="sticky top-28 space-y-6">
-                {toc.length > 1 && (
-                  <nav
-                    aria-label="On this page"
-                    className="rounded-2xl border border-navy-100 bg-white/70 p-5"
-                  >
-                    <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-navy-400">
-                      <IconListSearch size={14} />
-                      In this post
+                  {/* Comments */}
+                  <CommentsThread />
+
+                  {/* Prev / next */}
+                  {(previous || next) && (
+                    <div className="mt-10 grid gap-4 sm:grid-cols-2">
+                      {previous ? (
+                        <Link
+                          href={`/posts/${previous.slug}`}
+                          className="group rounded-2xl border border-navy-100 bg-white/70 p-5 transition-all hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-glass"
+                        >
+                          <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-navy-300">
+                            Previous
+                          </span>
+                          <p className="mt-2 line-clamp-2 font-display text-sm font-bold leading-snug text-navy-900 group-hover:text-blue-600">
+                            {previous.title}
+                          </p>
+                        </Link>
+                      ) : (
+                        <span />
+                      )}
+                      {next && (
+                        <Link
+                          href={`/posts/${next.slug}`}
+                          className="group rounded-2xl border border-navy-100 bg-white/70 p-5 text-right transition-all hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-glass"
+                        >
+                          <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-navy-300">
+                            Next
+                          </span>
+                          <p className="mt-2 line-clamp-2 font-display text-sm font-bold leading-snug text-navy-900 group-hover:text-blue-600">
+                            {next.title}
+                          </p>
+                        </Link>
+                      )}
                     </div>
-                    <ul className="mt-3 space-y-2">
-                      {toc.map((heading) => (
-                        <li key={heading.id}>
-                          <a
-                            href={`#${heading.id}`}
-                            className="block border-l-2 border-navy-100 pl-3 text-sm leading-snug text-navy-500 transition-colors hover:border-blue-500 hover:text-blue-600"
-                          >
-                            {heading.text}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </nav>
-                )}
-
-                <div
-                  className="rounded-2xl p-6 text-white"
-                  style={{ backgroundImage: `linear-gradient(135deg, ${theme.color}, #0F2A43)` }}
-                >
-                  <h2 className="font-display text-base font-bold">Put this into practice</h2>
-                  <p className="mt-2 text-sm leading-relaxed text-white/80">
-                    Talk to the team building connected hospital, pharmacy and laboratory systems.
-                  </p>
-                  <Link
-                    href="/contact"
-                    className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-navy-900 transition-transform hover:-translate-y-0.5"
-                  >
-                    Contact us
-                    <IconArrowRight size={15} />
-                  </Link>
+                  )}
                 </div>
               </div>
-            </aside>
-          </div>
+
+              {/* Sidebar */}
+              <aside className="hidden lg:block">
+                <div className="sticky top-28 max-h-[calc(100vh-8rem)] space-y-6 overflow-y-auto overscroll-contain pr-1">
+                  {toc.length > 1 && (
+                    <nav
+                      aria-label="On this page"
+                      className="rounded-2xl border border-navy-100 bg-white/70 p-5"
+                    >
+                      <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-navy-400">
+                        <IconListSearch size={14} />
+                        In this post
+                      </div>
+                      <ul className="mt-3 max-h-[26vh] space-y-2 overflow-y-auto pr-1">
+                        {toc.map((heading) => (
+                          <li key={heading.id}>
+                            <a
+                              href={`#${heading.id}`}
+                              className="block border-l-2 border-navy-100 pl-3 text-sm leading-snug text-navy-500 transition-colors hover:border-blue-500 hover:text-blue-600"
+                            >
+                              {heading.text}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </nav>
+                  )}
+
+                  <StickyComposer />
+
+                  <div
+                    className="rounded-2xl p-6 text-white"
+                    style={{ backgroundImage: `linear-gradient(135deg, ${theme.color}, #0F2A43)` }}
+                  >
+                    <h2 className="font-display text-base font-bold">Put this into practice</h2>
+                    <p className="mt-2 text-sm leading-relaxed text-white/80">
+                      Talk to the team building connected hospital, pharmacy and laboratory systems.
+                    </p>
+                    <Link
+                      href="/contact"
+                      className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-navy-900 transition-transform hover:-translate-y-0.5"
+                    >
+                      Contact us
+                      <IconArrowRight size={15} />
+                    </Link>
+                  </div>
+                </div>
+              </aside>
+            </div>
+          </PostCommentsProvider>
         </div>
       </section>
 
