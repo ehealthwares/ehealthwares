@@ -5,9 +5,10 @@ export const dynamic = 'force-dynamic';
 const API_BASE = process.env.API_URL || 'http://api.ehealthwares.com/ehealthwares';
 
 /**
- * Same-origin proxy for post comments. The browser talks to this route so
- * client-side reads/writes work without exposing the backend origin, and the
- * response is never cached (comments change as visitors post).
+ * Local-development mirror of the backend's comment endpoint, mounted on the
+ * same path the browser calls. In production nginx routes `/api/*` straight
+ * to the backend (`API_URL`), so this handler is only exercised where the Next
+ * server receives `/api/*` directly. Responses are never cached.
  */
 function backendUrl(slug: string) {
   return `${API_BASE}/articles/${encodeURIComponent(slug)}/comments`;
