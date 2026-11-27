@@ -581,18 +581,28 @@ function parseOptions(text) {
   return out;
 }
 
-/** A date-ish question still arrives as text; a native date field is the best UI. */
-function wantsDate(text) {
-  return /\b(YYYY-MM-DD|dd/mm/yyyy)\b/i.test(text || '');
+/** Prefer the engine's own classification; fall back to the prompt text. */
+function modeOf(m) {
+  return ((m && (m.renderMode || m.questionType)) || '').toLowerCase();
+}
+
+function wantsDate(m) {
+  var mode = modeOf(m);
+  if (mode) return mode === 'date' || mode === 'datetime';
+  return /\b(YYYY-MM-DD|dd/mm/yyyy)\b/i.test((m && m.text) || '');
 }
 
 /** A location question expects "lat,lng" (the engine parses that form). */
-function wantsLocation(text) {
-  return /\b(location|nearest|clinic|address|where)\b/i.test(text || '');
+function wantsLocation(m) {
+  var mode = modeOf(m);
+  if (mode) return mode === 'location';
+  return /\b(location|nearest|clinic|address|where)\b/i.test((m && m.text) || '');
 }
 
-function wantsNumber(text) {
-  return /\b(number|how many|age|quantity)\b/i.test(text || '');
+function wantsNumber(m) {
+  var mode = modeOf(m);
+  if (mode) return mode === 'number' || ((m && m.questionType) || '').toLowerCase() === 'number';
+  return /\b(number|how many|age|quantity)\b/i.test((m && m.text) || '');
 }
 
 function renderThread() {
@@ -623,7 +633,7 @@ function renderThread() {
         row.appendChild(b);
       });
       msgEl.appendChild(row);
-    } else if (wantsLocation(lastBot.text) && navigator.geolocation) {
+    } else if (wantsLocation(lastBot) && navigator.geolocation) {
       var shareLoc = document.createElement('button');
       shareLoc.type = 'button';
       shareLoc.className = 'answer-btn primary';
@@ -639,11 +649,11 @@ function renderThread() {
       });
       row.appendChild(shareLoc);
       msgEl.appendChild(row);
-    } else if (wantsDate(lastBot.text) || wantsNumber(lastBot.text)) {
+    } else if (wantsDate(lastBot) || wantsNumber(lastBot)) {
       var input = document.createElement('input');
       input.className = 'answer-input';
-      input.type = wantsDate(lastBot.text) ? 'date' : 'number';
-      input.placeholder = wantsDate(lastBot.text) ? 'YYYY-MM-DD' : 'Enter a number';
+      input.type = wantsDate(lastBot) ? 'date' : 'number';
+      input.placeholder = wantsDate(lastBot) ? 'YYYY-MM-DD' : 'Enter a number';
       var go = document.createElement('button');
       go.type = 'button';
       go.className = 'answer-btn primary';
@@ -698,7 +708,14 @@ async function loadThread(id) {
     var page = await C.fetchThread(id);
     var items = (page.items || []).slice().reverse();
     messages = items.map(function (x) {
-      return { id: x.id, role: x.direction === 'inbound' ? 'user' : 'bot', text: x.text, createdAt: x.createdAt };
+      return {
+        id: x.id,
+        role: x.direction === 'inbound' ? 'user' : 'bot',
+        text: x.text,
+        createdAt: x.createdAt,
+        renderMode: x.renderMode || null,
+        questionType: x.questionType || null,
+      };
     });
     C.saveThread(id, messages);
     if (id === activeConversationId) renderThread();
