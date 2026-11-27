@@ -95,7 +95,7 @@ export function PostCommentsProvider({
     setLoading(true);
     try {
       const res = await fetch(
-        `/api/ehealthwares/posts/${encodeURIComponent(postSlug)}/comments`,
+        `/api/ehealthwares/articles/${encodeURIComponent(postSlug)}/comments`,
         { cache: 'no-store' },
       );
       if (!res.ok) throw new Error('load failed');
@@ -146,7 +146,7 @@ export function PostCommentsProvider({
 
       try {
         const res = await fetch(
-          `/api/ehealthwares/posts/${encodeURIComponent(postSlug)}/comments`,
+          `/api/ehealthwares/articles/${encodeURIComponent(postSlug)}/comments`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Reader comments on posts: optional name/phone/email dialog after submit; dismissing posts the comment as Anonymous
 - Three seeded comments per post (108) via `seed/seeds/ehealthwares/inline/comments.json`
-- Same-origin comments proxy at `/api/ehealthwares/posts/[slug]/comments`
+- Same-origin comments at `/api/ehealthwares/articles/[slug]/comments` (nginx routes `/api/*` to the backend; the matching Next route is the local-dev proxy)
 
 ---
 
